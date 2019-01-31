@@ -8,30 +8,114 @@
 
 /* Begin PBXBuildFile section */
 		FB52C9CD2203444A00E99FF1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9CC2203444A00E99FF1 /* AppDelegate.m */; };
-		FB52C9D02203444A00E99FF1 /* RootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9CF2203444A00E99FF1 /* RootViewController.m */; };
-		FB52C9D32203444A00E99FF1 /* DataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9D22203444A00E99FF1 /* DataViewController.m */; };
-		FB52C9D62203444A00E99FF1 /* ModelController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9D52203444A00E99FF1 /* ModelController.m */; };
-		FB52C9D92203444A00E99FF1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9D72203444A00E99FF1 /* Main.storyboard */; };
 		FB52C9DB2203444B00E99FF1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9DA2203444B00E99FF1 /* Assets.xcassets */; };
 		FB52C9DE2203444B00E99FF1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9DC2203444B00E99FF1 /* LaunchScreen.storyboard */; };
 		FB52C9E12203444B00E99FF1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9E02203444B00E99FF1 /* main.m */; };
+		FB52C9E92203476C00E99FF1 /* MainVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9E82203476C00E99FF1 /* MainVC.m */; };
+		FB52C9ED22034F7900E99FF1 /* SoundVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9EC22034F7900E99FF1 /* SoundVC.m */; };
+		FB52CA03220358B700E99FF1 /* bbdove.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9EF220358B200E99FF1 /* bbdove.wav */; };
+		FB52CA04220358B700E99FF1 /* munich-chimes.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F0220358B200E99FF1 /* munich-chimes.wav */; };
+		FB52CA05220358B700E99FF1 /* vic-cricks2.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F1220358B200E99FF1 /* vic-cricks2.wav */; };
+		FB52CA06220358B700E99FF1 /* bbdove1.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F2220358B200E99FF1 /* bbdove1.wav */; };
+		FB52CA07220358B700E99FF1 /* dandenongs1.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F3220358B300E99FF1 /* dandenongs1.wav */; };
+		FB52CA08220358B700E99FF1 /* bbrooster.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F4220358B300E99FF1 /* bbrooster.wav */; };
+		FB52CA09220358B700E99FF1 /* yearlinggulls.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F5220358B300E99FF1 /* yearlinggulls.wav */; };
+		FB52CA0A220358B700E99FF1 /* bbdove3.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F6220358B300E99FF1 /* bbdove3.wav */; };
+		FB52CA0B220358B700E99FF1 /* gull2.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F7220358B300E99FF1 /* gull2.wav */; };
+		FB52CA0C220358B700E99FF1 /* bville-bird.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F8220358B300E99FF1 /* bville-bird.wav */; };
+		FB52CA0D220358B700E99FF1 /* gull-cry-2.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F9220358B300E99FF1 /* gull-cry-2.wav */; };
+		FB52CA0E220358B700E99FF1 /* gulls.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9FA220358B300E99FF1 /* gulls.wav */; };
+		FB52CA0F220358B700E99FF1 /* munich-crowd.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9FB220358B600E99FF1 /* munich-crowd.wav */; };
+		FB52CA10220358B700E99FF1 /* munich-glock.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9FC220358B600E99FF1 /* munich-glock.wav */; };
+		FB52CA11220358B700E99FF1 /* treefrogs3.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9FD220358B600E99FF1 /* treefrogs3.wav */; };
+		FB52CA12220358B700E99FF1 /* vic-cricks.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9FE220358B600E99FF1 /* vic-cricks.wav */; };
+		FB52CA13220358B700E99FF1 /* cabinnoise.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9FF220358B600E99FF1 /* cabinnoise.wav */; };
+		FB52CA14220358B700E99FF1 /* sin-880.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA00220358B700E99FF1 /* sin-880.wav */; };
+		FB52CA15220358B700E99FF1 /* sin-440.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA01220358B700E99FF1 /* sin-440.wav */; };
+		FB52CA16220358B700E99FF1 /* gull-cry.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA02220358B700E99FF1 /* gull-cry.wav */; };
+		FB52CA2922035A5000E99FF1 /* ishihara5.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA2022035A5000E99FF1 /* ishihara5.jpeg */; };
+		FB52CA2A22035A5000E99FF1 /* ishihara29.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA2122035A5000E99FF1 /* ishihara29.jpeg */; };
+		FB52CA2B22035A5000E99FF1 /* ishihara25.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA2222035A5000E99FF1 /* ishihara25.jpeg */; };
+		FB52CA2C22035A5000E99FF1 /* rainbow.gif in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA2322035A5000E99FF1 /* rainbow.gif */; };
+		FB52CA2D22035A5000E99FF1 /* ishihara56.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA2422035A5000E99FF1 /* ishihara56.jpeg */; };
+		FB52CA2E22035A5000E99FF1 /* ishihara9.gif in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA2522035A5000E99FF1 /* ishihara9.gif */; };
+		FB52CA2F22035A5000E99FF1 /* ishihara8.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA2622035A5000E99FF1 /* ishihara8.jpeg */; };
+		FB52CA3022035A5000E99FF1 /* ishihara45.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA2722035A5000E99FF1 /* ishihara45.jpeg */; };
+		FB52CA3122035A5000E99FF1 /* cube.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA2822035A5000E99FF1 /* cube.jpeg */; };
+		FB52CA3A22035AEC00E99FF1 /* pick6.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA3822035AEC00E99FF1 /* pick6.dat */; };
+		FB52CA3B22035AEC00E99FF1 /* pick6-2.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA3922035AEC00E99FF1 /* pick6-2.dat */; };
+		FB52CA4222035F6D00E99FF1 /* ColorBlindVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4022035F6D00E99FF1 /* ColorBlindVC.m */; };
+		FB52CA4522035FA800E99FF1 /* LotteryVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4322035FA700E99FF1 /* LotteryVC.m */; };
+		FB52CA482203602000E99FF1 /* DDVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA462203601F00E99FF1 /* DDVC.m */; };
+		FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4A2203620300E99FF1 /* ExhibitVC.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		FB52C9C82203444A00E99FF1 /* SciEx.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SciEx.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB52C9CB2203444A00E99FF1 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		FB52C9CC2203444A00E99FF1 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		FB52C9CE2203444A00E99FF1 /* RootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RootViewController.h; sourceTree = "<group>"; };
-		FB52C9CF2203444A00E99FF1 /* RootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootViewController.m; sourceTree = "<group>"; };
-		FB52C9D12203444A00E99FF1 /* DataViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DataViewController.h; sourceTree = "<group>"; };
-		FB52C9D22203444A00E99FF1 /* DataViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DataViewController.m; sourceTree = "<group>"; };
-		FB52C9D42203444A00E99FF1 /* ModelController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelController.h; sourceTree = "<group>"; };
-		FB52C9D52203444A00E99FF1 /* ModelController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ModelController.m; sourceTree = "<group>"; };
-		FB52C9D82203444A00E99FF1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		FB52C9DA2203444B00E99FF1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FB52C9DD2203444B00E99FF1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FB52C9DF2203444B00E99FF1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB52C9E02203444B00E99FF1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		FB52C9E72203476C00E99FF1 /* MainVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainVC.h; sourceTree = "<group>"; };
+		FB52C9E82203476C00E99FF1 /* MainVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainVC.m; sourceTree = "<group>"; };
+		FB52C9EA2203484C00E99FF1 /* Defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Defines.h; sourceTree = "<group>"; };
+		FB52C9EB22034F7900E99FF1 /* SoundVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoundVC.h; sourceTree = "<group>"; };
+		FB52C9EC22034F7900E99FF1 /* SoundVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SoundVC.m; sourceTree = "<group>"; };
+		FB52C9EF220358B200E99FF1 /* bbdove.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bbdove.wav; sourceTree = "<group>"; };
+		FB52C9F0220358B200E99FF1 /* munich-chimes.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "munich-chimes.wav"; sourceTree = "<group>"; };
+		FB52C9F1220358B200E99FF1 /* vic-cricks2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "vic-cricks2.wav"; sourceTree = "<group>"; };
+		FB52C9F2220358B200E99FF1 /* bbdove1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bbdove1.wav; sourceTree = "<group>"; };
+		FB52C9F3220358B300E99FF1 /* dandenongs1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = dandenongs1.wav; sourceTree = "<group>"; };
+		FB52C9F4220358B300E99FF1 /* bbrooster.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bbrooster.wav; sourceTree = "<group>"; };
+		FB52C9F5220358B300E99FF1 /* yearlinggulls.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = yearlinggulls.wav; sourceTree = "<group>"; };
+		FB52C9F6220358B300E99FF1 /* bbdove3.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bbdove3.wav; sourceTree = "<group>"; };
+		FB52C9F7220358B300E99FF1 /* gull2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = gull2.wav; sourceTree = "<group>"; };
+		FB52C9F8220358B300E99FF1 /* bville-bird.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "bville-bird.wav"; sourceTree = "<group>"; };
+		FB52C9F9220358B300E99FF1 /* gull-cry-2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "gull-cry-2.wav"; sourceTree = "<group>"; };
+		FB52C9FA220358B300E99FF1 /* gulls.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = gulls.wav; sourceTree = "<group>"; };
+		FB52C9FB220358B600E99FF1 /* munich-crowd.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "munich-crowd.wav"; sourceTree = "<group>"; };
+		FB52C9FC220358B600E99FF1 /* munich-glock.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "munich-glock.wav"; sourceTree = "<group>"; };
+		FB52C9FD220358B600E99FF1 /* treefrogs3.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = treefrogs3.wav; sourceTree = "<group>"; };
+		FB52C9FE220358B600E99FF1 /* vic-cricks.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "vic-cricks.wav"; sourceTree = "<group>"; };
+		FB52C9FF220358B600E99FF1 /* cabinnoise.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = cabinnoise.wav; sourceTree = "<group>"; };
+		FB52CA00220358B700E99FF1 /* sin-880.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "sin-880.wav"; sourceTree = "<group>"; };
+		FB52CA01220358B700E99FF1 /* sin-440.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "sin-440.wav"; sourceTree = "<group>"; };
+		FB52CA02220358B700E99FF1 /* gull-cry.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "gull-cry.wav"; sourceTree = "<group>"; };
+		FB52CA18220358EB00E99FF1 /* gull2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = gull2.wav; sourceTree = "<group>"; };
+		FB52CA19220358EB00E99FF1 /* gulls.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = gulls.wav; sourceTree = "<group>"; };
+		FB52CA1A220358EB00E99FF1 /* birds1.mpeg */ = {isa = PBXFileReference; lastKnownFileType = video.mpeg; path = birds1.mpeg; sourceTree = "<group>"; };
+		FB52CA1B220358EB00E99FF1 /* gull-cry-2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "gull-cry-2.wav"; sourceTree = "<group>"; };
+		FB52CA1C220358EB00E99FF1 /* gull-cry.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "gull-cry.wav"; sourceTree = "<group>"; };
+		FB52CA1D220358EB00E99FF1 /* Notes */ = {isa = PBXFileReference; lastKnownFileType = text; path = Notes; sourceTree = "<group>"; };
+		FB52CA1E220358EB00E99FF1 /* Readme */ = {isa = PBXFileReference; lastKnownFileType = text; path = Readme; sourceTree = "<group>"; };
+		FB52CA2022035A5000E99FF1 /* ishihara5.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ishihara5.jpeg; sourceTree = "<group>"; };
+		FB52CA2122035A5000E99FF1 /* ishihara29.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ishihara29.jpeg; sourceTree = "<group>"; };
+		FB52CA2222035A5000E99FF1 /* ishihara25.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ishihara25.jpeg; sourceTree = "<group>"; };
+		FB52CA2322035A5000E99FF1 /* rainbow.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = rainbow.gif; sourceTree = "<group>"; };
+		FB52CA2422035A5000E99FF1 /* ishihara56.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ishihara56.jpeg; sourceTree = "<group>"; };
+		FB52CA2522035A5000E99FF1 /* ishihara9.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = ishihara9.gif; sourceTree = "<group>"; };
+		FB52CA2622035A5000E99FF1 /* ishihara8.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ishihara8.jpeg; sourceTree = "<group>"; };
+		FB52CA2722035A5000E99FF1 /* ishihara45.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ishihara45.jpeg; sourceTree = "<group>"; };
+		FB52CA2822035A5000E99FF1 /* cube.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = cube.jpeg; sourceTree = "<group>"; };
+		FB52CA3322035A6F00E99FF1 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		FB52CA3422035A6F00E99FF1 /* 0.pbb */ = {isa = PBXFileReference; lastKnownFileType = file; path = 0.pbb; sourceTree = "<group>"; };
+		FB52CA3522035A6F00E99FF1 /* cb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cb.png; sourceTree = "<group>"; };
+		FB52CA3622035A6F00E99FF1 /* 1.pbb */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1.pbb; sourceTree = "<group>"; };
+		FB52CA3822035AEC00E99FF1 /* pick6.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = pick6.dat; sourceTree = "<group>"; };
+		FB52CA3922035AEC00E99FF1 /* pick6-2.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "pick6-2.dat"; sourceTree = "<group>"; };
+		FB52CA3D22035B0400E99FF1 /* lot.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = lot.c; sourceTree = "<group>"; };
+		FB52CA3E22035B0400E99FF1 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		FB52CA3F22035B0400E99FF1 /* Notes */ = {isa = PBXFileReference; lastKnownFileType = text; path = Notes; sourceTree = "<group>"; };
+		FB52CA4022035F6D00E99FF1 /* ColorBlindVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ColorBlindVC.m; sourceTree = "<group>"; };
+		FB52CA4122035F6D00E99FF1 /* ColorBlindVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorBlindVC.h; sourceTree = "<group>"; };
+		FB52CA4322035FA700E99FF1 /* LotteryVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LotteryVC.m; sourceTree = "<group>"; };
+		FB52CA4422035FA700E99FF1 /* LotteryVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LotteryVC.h; sourceTree = "<group>"; };
+		FB52CA462203601F00E99FF1 /* DDVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDVC.m; sourceTree = "<group>"; };
+		FB52CA472203602000E99FF1 /* DDVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDVC.h; sourceTree = "<group>"; };
+		FB52CA492203620300E99FF1 /* ExhibitVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExhibitVC.h; sourceTree = "<group>"; };
+		FB52CA4A2203620300E99FF1 /* ExhibitVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExhibitVC.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,21 +148,120 @@
 		FB52C9CA2203444A00E99FF1 /* SciEx */ = {
 			isa = PBXGroup;
 			children = (
+				FB52C9EA2203484C00E99FF1 /* Defines.h */,
 				FB52C9CB2203444A00E99FF1 /* AppDelegate.h */,
 				FB52C9CC2203444A00E99FF1 /* AppDelegate.m */,
-				FB52C9CE2203444A00E99FF1 /* RootViewController.h */,
-				FB52C9CF2203444A00E99FF1 /* RootViewController.m */,
-				FB52C9D12203444A00E99FF1 /* DataViewController.h */,
-				FB52C9D22203444A00E99FF1 /* DataViewController.m */,
-				FB52C9D42203444A00E99FF1 /* ModelController.h */,
-				FB52C9D52203444A00E99FF1 /* ModelController.m */,
-				FB52C9D72203444A00E99FF1 /* Main.storyboard */,
+				FB52C9E72203476C00E99FF1 /* MainVC.h */,
+				FB52C9E82203476C00E99FF1 /* MainVC.m */,
+				FB52CA492203620300E99FF1 /* ExhibitVC.h */,
+				FB52CA4A2203620300E99FF1 /* ExhibitVC.m */,
+				FB52C9EB22034F7900E99FF1 /* SoundVC.h */,
+				FB52C9EC22034F7900E99FF1 /* SoundVC.m */,
+				FB52CA4122035F6D00E99FF1 /* ColorBlindVC.h */,
+				FB52CA4022035F6D00E99FF1 /* ColorBlindVC.m */,
+				FB52CA4422035FA700E99FF1 /* LotteryVC.h */,
+				FB52CA4322035FA700E99FF1 /* LotteryVC.m */,
+				FB52CA472203602000E99FF1 /* DDVC.h */,
+				FB52CA462203601F00E99FF1 /* DDVC.m */,
+				FB52CA1F2203595500E99FF1 /* ColorBind */,
+				FB52CA3722035ADB00E99FF1 /* Lottery */,
+				FB52C9EE2203588600E99FF1 /* Sounds */,
 				FB52C9DA2203444B00E99FF1 /* Assets.xcassets */,
 				FB52C9DC2203444B00E99FF1 /* LaunchScreen.storyboard */,
 				FB52C9DF2203444B00E99FF1 /* Info.plist */,
 				FB52C9E02203444B00E99FF1 /* main.m */,
 			);
 			path = SciEx;
+			sourceTree = "<group>";
+		};
+		FB52C9EE2203588600E99FF1 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				FB52CA17220358CE00E99FF1 /* src */,
+				FB52C9EF220358B200E99FF1 /* bbdove.wav */,
+				FB52C9F2220358B200E99FF1 /* bbdove1.wav */,
+				FB52C9F6220358B300E99FF1 /* bbdove3.wav */,
+				FB52C9F4220358B300E99FF1 /* bbrooster.wav */,
+				FB52C9F8220358B300E99FF1 /* bville-bird.wav */,
+				FB52C9FF220358B600E99FF1 /* cabinnoise.wav */,
+				FB52C9F3220358B300E99FF1 /* dandenongs1.wav */,
+				FB52C9F9220358B300E99FF1 /* gull-cry-2.wav */,
+				FB52CA02220358B700E99FF1 /* gull-cry.wav */,
+				FB52C9F7220358B300E99FF1 /* gull2.wav */,
+				FB52C9FA220358B300E99FF1 /* gulls.wav */,
+				FB52C9F0220358B200E99FF1 /* munich-chimes.wav */,
+				FB52C9FB220358B600E99FF1 /* munich-crowd.wav */,
+				FB52C9FC220358B600E99FF1 /* munich-glock.wav */,
+				FB52CA01220358B700E99FF1 /* sin-440.wav */,
+				FB52CA00220358B700E99FF1 /* sin-880.wav */,
+				FB52C9FD220358B600E99FF1 /* treefrogs3.wav */,
+				FB52C9FE220358B600E99FF1 /* vic-cricks.wav */,
+				FB52C9F1220358B200E99FF1 /* vic-cricks2.wav */,
+				FB52C9F5220358B300E99FF1 /* yearlinggulls.wav */,
+			);
+			path = Sounds;
+			sourceTree = "<group>";
+		};
+		FB52CA17220358CE00E99FF1 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				FB52CA1A220358EB00E99FF1 /* birds1.mpeg */,
+				FB52CA1B220358EB00E99FF1 /* gull-cry-2.wav */,
+				FB52CA1C220358EB00E99FF1 /* gull-cry.wav */,
+				FB52CA18220358EB00E99FF1 /* gull2.wav */,
+				FB52CA19220358EB00E99FF1 /* gulls.wav */,
+				FB52CA1D220358EB00E99FF1 /* Notes */,
+				FB52CA1E220358EB00E99FF1 /* Readme */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		FB52CA1F2203595500E99FF1 /* ColorBind */ = {
+			isa = PBXGroup;
+			children = (
+				FB52CA3222035A6000E99FF1 /* src */,
+				FB52CA2822035A5000E99FF1 /* cube.jpeg */,
+				FB52CA2022035A5000E99FF1 /* ishihara5.jpeg */,
+				FB52CA2622035A5000E99FF1 /* ishihara8.jpeg */,
+				FB52CA2522035A5000E99FF1 /* ishihara9.gif */,
+				FB52CA2222035A5000E99FF1 /* ishihara25.jpeg */,
+				FB52CA2122035A5000E99FF1 /* ishihara29.jpeg */,
+				FB52CA2722035A5000E99FF1 /* ishihara45.jpeg */,
+				FB52CA2422035A5000E99FF1 /* ishihara56.jpeg */,
+				FB52CA2322035A5000E99FF1 /* rainbow.gif */,
+			);
+			path = ColorBind;
+			sourceTree = "<group>";
+		};
+		FB52CA3222035A6000E99FF1 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				FB52CA3422035A6F00E99FF1 /* 0.pbb */,
+				FB52CA3622035A6F00E99FF1 /* 1.pbb */,
+				FB52CA3522035A6F00E99FF1 /* cb.png */,
+				FB52CA3322035A6F00E99FF1 /* Makefile */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		FB52CA3722035ADB00E99FF1 /* Lottery */ = {
+			isa = PBXGroup;
+			children = (
+				FB52CA3C22035AF200E99FF1 /* src */,
+				FB52CA3922035AEC00E99FF1 /* pick6-2.dat */,
+				FB52CA3822035AEC00E99FF1 /* pick6.dat */,
+			);
+			path = Lottery;
+			sourceTree = "<group>";
+		};
+		FB52CA3C22035AF200E99FF1 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				FB52CA3D22035B0400E99FF1 /* lot.c */,
+				FB52CA3E22035B0400E99FF1 /* Makefile */,
+				FB52CA3F22035B0400E99FF1 /* Notes */,
+			);
+			path = src;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -138,9 +321,39 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB52CA3122035A5000E99FF1 /* cube.jpeg in Resources */,
+				FB52CA0B220358B700E99FF1 /* gull2.wav in Resources */,
+				FB52CA3022035A5000E99FF1 /* ishihara45.jpeg in Resources */,
+				FB52CA3B22035AEC00E99FF1 /* pick6-2.dat in Resources */,
+				FB52CA2C22035A5000E99FF1 /* rainbow.gif in Resources */,
+				FB52CA0A220358B700E99FF1 /* bbdove3.wav in Resources */,
+				FB52CA12220358B700E99FF1 /* vic-cricks.wav in Resources */,
+				FB52CA0E220358B700E99FF1 /* gulls.wav in Resources */,
+				FB52CA13220358B700E99FF1 /* cabinnoise.wav in Resources */,
+				FB52CA2B22035A5000E99FF1 /* ishihara25.jpeg in Resources */,
+				FB52CA09220358B700E99FF1 /* yearlinggulls.wav in Resources */,
+				FB52CA14220358B700E99FF1 /* sin-880.wav in Resources */,
+				FB52CA0C220358B700E99FF1 /* bville-bird.wav in Resources */,
+				FB52CA06220358B700E99FF1 /* bbdove1.wav in Resources */,
+				FB52CA3A22035AEC00E99FF1 /* pick6.dat in Resources */,
+				FB52CA2E22035A5000E99FF1 /* ishihara9.gif in Resources */,
+				FB52CA16220358B700E99FF1 /* gull-cry.wav in Resources */,
+				FB52CA2F22035A5000E99FF1 /* ishihara8.jpeg in Resources */,
+				FB52CA15220358B700E99FF1 /* sin-440.wav in Resources */,
+				FB52CA03220358B700E99FF1 /* bbdove.wav in Resources */,
+				FB52CA07220358B700E99FF1 /* dandenongs1.wav in Resources */,
+				FB52CA08220358B700E99FF1 /* bbrooster.wav in Resources */,
+				FB52CA0F220358B700E99FF1 /* munich-crowd.wav in Resources */,
 				FB52C9DE2203444B00E99FF1 /* LaunchScreen.storyboard in Resources */,
+				FB52CA2D22035A5000E99FF1 /* ishihara56.jpeg in Resources */,
 				FB52C9DB2203444B00E99FF1 /* Assets.xcassets in Resources */,
-				FB52C9D92203444A00E99FF1 /* Main.storyboard in Resources */,
+				FB52CA0D220358B700E99FF1 /* gull-cry-2.wav in Resources */,
+				FB52CA10220358B700E99FF1 /* munich-glock.wav in Resources */,
+				FB52CA11220358B700E99FF1 /* treefrogs3.wav in Resources */,
+				FB52CA04220358B700E99FF1 /* munich-chimes.wav in Resources */,
+				FB52CA2922035A5000E99FF1 /* ishihara5.jpeg in Resources */,
+				FB52CA05220358B700E99FF1 /* vic-cricks2.wav in Resources */,
+				FB52CA2A22035A5000E99FF1 /* ishihara29.jpeg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,24 +365,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB52C9E12203444B00E99FF1 /* main.m in Sources */,
-				FB52C9D02203444A00E99FF1 /* RootViewController.m in Sources */,
-				FB52C9D62203444A00E99FF1 /* ModelController.m in Sources */,
-				FB52C9D32203444A00E99FF1 /* DataViewController.m in Sources */,
+				FB52C9E92203476C00E99FF1 /* MainVC.m in Sources */,
+				FB52CA482203602000E99FF1 /* DDVC.m in Sources */,
+				FB52C9ED22034F7900E99FF1 /* SoundVC.m in Sources */,
+				FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */,
 				FB52C9CD2203444A00E99FF1 /* AppDelegate.m in Sources */,
+				FB52CA4222035F6D00E99FF1 /* ColorBlindVC.m in Sources */,
+				FB52CA4522035FA800E99FF1 /* LotteryVC.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		FB52C9D72203444A00E99FF1 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				FB52C9D82203444A00E99FF1 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		FB52C9DC2203444B00E99FF1 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (

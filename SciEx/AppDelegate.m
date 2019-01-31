@@ -7,16 +7,34 @@
 //
 
 #import "AppDelegate.h"
+#import "MainVC.h"
 
 @interface AppDelegate ()
+
+@property (nonatomic, strong)   MainVC *mainVC;
 
 @end
 
 @implementation AppDelegate
 
+@synthesize navController;
+@synthesize mainVC;
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+
+- (BOOL)application:(UIApplication *)application
+didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    if (![[NSFileManager defaultManager] changeCurrentDirectoryPath: documentsDirectory])
+        NSLog(@"inconceivable: could not cd to documents directory ***");
+    self.window = [[UIWindow alloc]
+                   initWithFrame:[[UIScreen mainScreen]
+                                  bounds]];
+    mainVC = [[MainVC alloc] init];
+    self.navController = [[UINavigationController alloc]
+                          initWithRootViewController: mainVC];
+    self.window.rootViewController = navController;
+    [self.window makeKeyAndVisible];
     return YES;
 }
 
