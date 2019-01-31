@@ -8,12 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
-NS_ASSUME_NONNULL_BEGIN
+@interface ExhibitVC : UIViewController {
+    NSString *exhibitTitle;
+    NSString *exhibitDescription;
+    BOOL exhibitAvailable;
+}
 
-@interface ExhibitVC : UIViewController
-
-- (NSString *) title;
+@property (nonatomic, strong)   NSString *exhibitTitle;
+@property (nonatomic, strong)   NSString *exhibitDescription;
+@property (assign)              BOOL exhibitAvailable;
 
 @end
-
-NS_ASSUME_NONNULL_END

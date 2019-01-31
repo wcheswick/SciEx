@@ -14,15 +14,27 @@
 
 @implementation ExhibitVC
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view.
-    
-    self.title = [super title];
+@synthesize exhibitTitle, exhibitDescription;
+@synthesize exhibitAvailable;
+
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        exhibitAvailable = NO;     // default is not ready yet
+        exhibitDescription = nil;
+        exhibitTitle = nil;
+    }
+    return self;
 }
 
-- (NSString *) title {
-    return [super title];
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    if (!exhibitTitle)
+        exhibitTitle = @"XXX your title here";
+    if (!exhibitDescription)
+        exhibitDescription = @"XXX your description here";
 }
 
 @end

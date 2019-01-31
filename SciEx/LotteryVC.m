@@ -19,6 +19,14 @@
 
 @synthesize top;
 
+- (id)init {
+    self = [super init];
+    if (self) {
+        exhibitTitle = @"How long does it take to win the lottery?";
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -33,7 +41,7 @@
     self.navigationItem.leftBarButtonItem = leftBarButton;
     
     top = [[UILabel alloc] init];
-    top.text = self.title;
+    top.text = self.exhibitTitle;
     top.textColor = [UIColor blueColor];
     top.numberOfLines = 0;
     top.lineBreakMode = NSLineBreakByWordWrapping;
@@ -65,10 +73,6 @@
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
     [self.navigationController popViewControllerAnimated:YES];
-}
-
-- (NSString *) title {
-    return @"How long does it take to win the lottery?";
 }
 
 @end

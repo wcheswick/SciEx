@@ -19,6 +19,15 @@
 
 @synthesize top;
 
+- (id)init {
+    self = [super init];
+    if (self) {
+        exhibitTitle = @"What does sound look like?";
+        exhibitAvailable = YES;
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -27,13 +36,14 @@
 //    self.navigationController.navigationBar.opaque = YES;
     self.navigationController.toolbarHidden = YES;
     
+    
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                       target:self action:@selector(doDone:)];
     self.navigationItem.leftBarButtonItem = leftBarButton;
     
     top = [[UILabel alloc] init];
-    top.text = self.title;
+    top.text = self.exhibitTitle;
     top.textColor = [UIColor blueColor];
     top.numberOfLines = 0;
     top.lineBreakMode = NSLineBreakByWordWrapping;
@@ -65,10 +75,6 @@
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
     [self.navigationController popViewControllerAnimated:YES];
-}
-
-- (NSString *) title {
-    return @"What does sound look like?";
 }
 
 @end

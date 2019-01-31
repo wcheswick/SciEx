@@ -97,8 +97,11 @@ static NSString * const reuseIdentifier = @"Cell";
     UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     
     ExhibitVC *exhibitView = (ExhibitVC *)[exhibitList objectAtIndex:indexPath.row];
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, cell.frame.size.width, cell.frame.size.height)];
-    label.text = [exhibitView title];
+    UILabel *label = [[UILabel alloc]
+                      initWithFrame:CGRectMake(0, 0,
+                                               cell.frame.size.width,
+                                               cell.frame.size.height)];
+    label.text = exhibitView.exhibitTitle;
     label.textColor = [UIColor blueColor];
     label.numberOfLines = 0;
     label.lineBreakMode = NSLineBreakByWordWrapping;
@@ -107,8 +110,12 @@ static NSString * const reuseIdentifier = @"Cell";
     label.layer.borderWidth = 0.5;
     label.layer.borderColor = [UIColor blackColor].CGColor;
     label.layer.cornerRadius = 10.0;
+    label.enabled = exhibitView.exhibitAvailable;
     [cell addSubview:label];
     
+    if (!exhibitView.exhibitAvailable) {
+        cell.userInteractionEnabled = NO;
+    }
     return cell;
 }
 

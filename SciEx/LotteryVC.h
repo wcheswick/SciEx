@@ -13,8 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface LotteryVC : ExhibitVC
 
-- (NSString *) title;
-
 @end
 
 NS_ASSUME_NONNULL_END
