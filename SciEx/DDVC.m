@@ -23,6 +23,7 @@
     self = [super init];
     if (self) {
         exhibitTitle = @"The digital darkroom";
+        exhibitAvailable = YES;
     }
     return self;
 }
@@ -73,6 +74,11 @@
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
     [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+- (void) processImage:(u_char *)buffer w:(size_t)w h:(size_t)h {
+    //    NSLog(@"process %zu %zu", w, h);
 }
 
 @end

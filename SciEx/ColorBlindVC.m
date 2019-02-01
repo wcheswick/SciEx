@@ -7,22 +7,30 @@
 //
 
 #import "ColorBlindVC.h"
+#import "PixelView.h"
 #import "Defines.h"
 
 @interface ColorBlindVC ()
 
-@property (nonatomic, strong) UILabel *top;
+@property (nonatomic, strong)   UILabel *top;
+@property (nonatomic, strong)   UIView *liveView;
+@property (nonatomic, strong)   UIView *cbView;
+@property (nonatomic, strong)   PixelView *cbImage;
 
 @end
 
 @implementation ColorBlindVC
 
 @synthesize top;
+@synthesize liveView;
+@synthesize cbView, cbImage;
 
 - (id)init {
     self = [super init];
     if (self) {
         exhibitTitle = @"What do the colorblind see?";
+        exhibitAvailable = YES;
+        self.caller = self;
     }
     return self;
 }
@@ -52,6 +60,14 @@
     top.layer.borderColor = [UIColor blackColor].CGColor;
     top.layer.cornerRadius = 10.0;
     [self.view addSubview:top];
+    
+    liveView = [[UIView alloc] init];
+    liveView.backgroundColor = [UIColor yellowColor];
+    [self.view addSubview:liveView];
+    
+    cbView = [[UIView alloc] init];
+    cbView.backgroundColor = [UIColor orangeColor];
+    [self.view addSubview:cbView];
 
     self.view.backgroundColor = [UIColor whiteColor];
 }
@@ -70,10 +86,48 @@
     SET_VIEW_HEIGHT(top, 50);
     SET_VIEW_X(top, 0);
     [top setNeedsDisplay];
+    
+    CGRect f;
+    f.origin = CGPointMake(INSET, BELOW(top.frame) + SEP);
+    f.size = CGSizeMake(self.view.frame.size.width - 2*INSET,
+                        (self.view.frame.size.height - f.origin.y)/2);
+    liveView.frame = f;
+    [liveView setNeedsDisplay];
+    
+    f.origin.y = BELOW(f) + SEP;
+    cbView.frame = f;
+    [cbView setNeedsDisplay];
+    
+    f.origin = CGPointMake(0, 0);
+    cbImage = [[PixelView alloc] initWithFrame:f];
+    cbImage.backgroundColor = [UIColor greenColor];
+    [cbView addSubview:cbImage];
+    
+    if ([self selectCamera:AVCaptureDevicePositionFront]) {
+        [self setLiveFrameAndOrientation:liveView.frame];
+        [self startVideoCapture:liveView.frame.size liveView:liveView];
+    } else {
+        NSLog(@"XXX no camera available");
+    }
+}
+
+- (void) viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    
 }
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
+    [self stopVideoCapture];
     [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void) processImage:(u_char *)buffer w:(size_t)w h:(size_t)h {
+//    NSLog(@"process %zu %zu", w, h);
+    
+    cbImage.buffer = buffer;
+    cbImage.width = w;
+    cbImage.height = h;
+    [cbImage setNeedsDisplay];
 }
 
 @end

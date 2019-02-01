@@ -48,6 +48,8 @@
 		FB52CA4522035FA800E99FF1 /* LotteryVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4322035FA700E99FF1 /* LotteryVC.m */; };
 		FB52CA482203602000E99FF1 /* DDVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA462203601F00E99FF1 /* DDVC.m */; };
 		FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4A2203620300E99FF1 /* ExhibitVC.m */; };
+		FB52CA4E2203A7DE00E99FF1 /* VideoExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */; };
+		FB52CA512204C4E300E99FF1 /* PixelView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA502204C4E300E99FF1 /* PixelView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -116,6 +118,10 @@
 		FB52CA472203602000E99FF1 /* DDVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDVC.h; sourceTree = "<group>"; };
 		FB52CA492203620300E99FF1 /* ExhibitVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExhibitVC.h; sourceTree = "<group>"; };
 		FB52CA4A2203620300E99FF1 /* ExhibitVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExhibitVC.m; sourceTree = "<group>"; };
+		FB52CA4C2203A7DE00E99FF1 /* VideoExhibitVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoExhibitVC.h; sourceTree = "<group>"; };
+		FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoExhibitVC.m; sourceTree = "<group>"; };
+		FB52CA4F2204C4E300E99FF1 /* PixelView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PixelView.h; sourceTree = "<group>"; };
+		FB52CA502204C4E300E99FF1 /* PixelView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PixelView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,6 +161,10 @@
 				FB52C9E82203476C00E99FF1 /* MainVC.m */,
 				FB52CA492203620300E99FF1 /* ExhibitVC.h */,
 				FB52CA4A2203620300E99FF1 /* ExhibitVC.m */,
+				FB52CA4C2203A7DE00E99FF1 /* VideoExhibitVC.h */,
+				FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */,
+				FB52CA4F2204C4E300E99FF1 /* PixelView.h */,
+				FB52CA502204C4E300E99FF1 /* PixelView.m */,
 				FB52C9EB22034F7900E99FF1 /* SoundVC.h */,
 				FB52C9EC22034F7900E99FF1 /* SoundVC.m */,
 				FB52CA4122035F6D00E99FF1 /* ColorBlindVC.h */,
@@ -370,8 +380,10 @@
 				FB52C9ED22034F7900E99FF1 /* SoundVC.m in Sources */,
 				FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */,
 				FB52C9CD2203444A00E99FF1 /* AppDelegate.m in Sources */,
+				FB52CA4E2203A7DE00E99FF1 /* VideoExhibitVC.m in Sources */,
 				FB52CA4222035F6D00E99FF1 /* ColorBlindVC.m in Sources */,
 				FB52CA4522035FA800E99FF1 /* LotteryVC.m in Sources */,
+				FB52CA512204C4E300E99FF1 /* PixelView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
