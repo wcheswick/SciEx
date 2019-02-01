@@ -104,7 +104,8 @@
     // Do any additional setup after loading the view.
 }
 
-- (void) startVideoCapture:(CGSize) capSize liveView:(nullable UIView *)liveView {
+- (void) startVideoCapture:(CGSize) capSize
+                  liveView:(nullable UIView *)liveView {
     NSError *error;
     
     AVCaptureDeviceInput *capInput = [AVCaptureDeviceInput
@@ -116,6 +117,7 @@
     if (liveView) {
         liveLayer = [AVCaptureVideoPreviewLayer layerWithSession: captureSession];
         liveLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        liveLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
         [liveView.layer addSublayer: liveLayer];
     }
 
@@ -137,44 +139,6 @@
     [captureSession stopRunning];
 }
 
-static BOOL first = YES;
-
-- (void)captureOutput:(AVCaptureOutput *)output
-didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
-       fromConnection:(AVCaptureConnection *)connection {
-    CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-    CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
-    
-    size_t bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
-    size_t bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
-    size_t bpr = CVPixelBufferGetBytesPerRow(pixelBuffer);
-    size_t stride = bpr/bufferWidth;
-    unsigned char *pixel = (unsigned char *)CVPixelBufferGetBaseAddress(pixelBuffer);
-    
-    if (first) {
-        NSLog(@"%zu x %zu, %zu stride %lu", bufferWidth, bufferHeight, bpr, stride);
-        first = NO;
-    }
-    
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        [self->caller processImage:pixel w:bufferWidth h:bufferHeight];
-    });
-
-#ifdef notdef
-    for( int row = 0; row < bufferHeight; row++ ) {
-        for( int column = 0; column < bufferWidth; column++ ) {
-            int r = pixel[0];
-            int g = pixel[1];
-            int b = pixel[2];
-//            NSLog(@"%4d %4d %4d", r, g, b);
-//            pixel[1] = 0; //  it sets the green element of each pixel to zero, which gives the entire frame a purple tint.
-            pixel += stride;
-        }
-    }
-#endif
-
-    CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
-}
 
 #ifdef notdef
 - (void) startVideoCaptureToBuffer {

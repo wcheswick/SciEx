@@ -14,6 +14,7 @@
 
 @property (nonatomic, strong)   UILabel *top;
 @property (nonatomic, strong)   UIView *liveView;
+@property (nonatomic, strong)   UIImageView *liveImageView;
 @property (nonatomic, strong)   UIView *cbView;
 @property (nonatomic, strong)   PixelView *cbImage;
 
@@ -22,7 +23,7 @@
 @implementation ColorBlindVC
 
 @synthesize top;
-@synthesize liveView;
+@synthesize liveView, liveImageView;
 @synthesize cbView, cbImage;
 
 - (id)init {
@@ -65,6 +66,9 @@
     liveView.backgroundColor = [UIColor yellowColor];
     [self.view addSubview:liveView];
     
+    liveImageView = [[UIImageView alloc] init];
+    [liveView addSubview:liveImageView];
+    
     cbView = [[UIView alloc] init];
     cbView.backgroundColor = [UIColor orangeColor];
     [self.view addSubview:cbView];
@@ -94,6 +98,9 @@
     liveView.frame = f;
     [liveView setNeedsDisplay];
     
+    liveImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height);
+    [liveImageView setNeedsDisplay];
+    
     f.origin.y = BELOW(f) + SEP;
     cbView.frame = f;
     [cbView setNeedsDisplay];
@@ -119,6 +126,62 @@
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
     [self stopVideoCapture];
     [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+- (void)captureOutput:(AVCaptureOutput *)output
+didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+       fromConnection:(AVCaptureConnection *)connection {
+    
+    CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
+    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+    
+    CIContext *context = [CIContext contextWithOptions:nil];
+    CGImageRef myImage = [context
+                          createCGImage:ciImage
+                          fromRect:CGRectMake(0, 0,
+                                              CVPixelBufferGetWidth(pixelBuffer),
+                                              CVPixelBufferGetHeight(pixelBuffer))];
+    UIImage *liveImage = [UIImage imageWithCGImage:myImage];
+    CGImageRelease(myImage);
+    CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
+
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        self.liveImageView.image = liveImage;
+        [self.liveImageView setNeedsDisplay];
+    });
+
+#ifdef notdef
+    CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
+    size_t bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
+    size_t bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
+    size_t bpr = CVPixelBufferGetBytesPerRow(pixelBuffer);
+    size_t stride = bpr/bufferWidth;
+    unsigned char *pixel = (unsigned char *)CVPixelBufferGetBaseAddress(pixelBuffer);
+    
+    if (first) {
+        NSLog(@"%zu x %zu, %zu stride %lu", bufferWidth, bufferHeight, bpr, stride);
+        first = NO;
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        [self->caller processImage:pixel w:bufferWidth h:bufferHeight];
+    });
+    
+#ifdef notdef
+    for( int row = 0; row < bufferHeight; row++ ) {
+        for( int column = 0; column < bufferWidth; column++ ) {
+            int r = pixel[0];
+            int g = pixel[1];
+            int b = pixel[2];
+            //            NSLog(@"%4d %4d %4d", r, g, b);
+            //            pixel[1] = 0; //  it sets the green element of each pixel to zero, which gives the entire frame a purple tint.
+            pixel += stride;
+        }
+    }
+#endif
+#endif
 }
 
 - (void) processImage:(u_char *)buffer w:(size_t)w h:(size_t)h {
