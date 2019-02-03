@@ -16,6 +16,7 @@
 @property (nonatomic, strong)   UIView *liveView;
 @property (nonatomic, strong)   UIImageView *liveImageView;
 @property (nonatomic, strong)   UIView *cbView;
+@property (nonatomic, strong)   UIImageView *cbImageView;
 @property (nonatomic, strong)   PixelView *cbImage;
 
 @end
@@ -24,7 +25,7 @@
 
 @synthesize top;
 @synthesize liveView, liveImageView;
-@synthesize cbView, cbImage;
+@synthesize cbView, cbImageView;
 
 - (id)init {
     self = [super init];
@@ -72,6 +73,9 @@
     cbView = [[UIView alloc] init];
     cbView.backgroundColor = [UIColor orangeColor];
     [self.view addSubview:cbView];
+    
+    cbImageView = [[UIImageView alloc] init];
+    [cbView addSubview:cbImageView];
 
     self.view.backgroundColor = [UIColor whiteColor];
 }
@@ -91,6 +95,7 @@
     SET_VIEW_X(top, 0);
     [top setNeedsDisplay];
     
+#ifdef notdef
     CGRect f;
     f.origin = CGPointMake(INSET, BELOW(top.frame) + SEP);
     f.size = CGSizeMake(self.view.frame.size.width - 2*INSET,
@@ -100,19 +105,21 @@
     
     liveImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height);
     [liveImageView setNeedsDisplay];
+#endif
     
-    f.origin.y = BELOW(f) + SEP;
+    CGRect f;
+    f.origin = CGPointMake(INSET, BELOW(top.frame) + SEP);
+    f.size = CGSizeMake(self.view.frame.size.width - 2*INSET,
+                        (self.view.frame.size.height - f.origin.y));
     cbView.frame = f;
     [cbView setNeedsDisplay];
     
-    f.origin = CGPointMake(0, 0);
-    cbImage = [[PixelView alloc] initWithFrame:f];
-    cbImage.backgroundColor = [UIColor greenColor];
-    [cbView addSubview:cbImage];
-    
+    cbImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height);
+    [cbImageView setNeedsDisplay];
+
     if ([self selectCamera:AVCaptureDevicePositionFront]) {
         [self setLiveFrameAndOrientation:liveView.frame];
-        [self startVideoCapture:liveView.frame.size liveView:liveView];
+        [self startVideoCapture:liveView.frame.size liveView:nil];
     } else {
         NSLog(@"XXX no camera available");
     }
@@ -135,8 +142,8 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     
     CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
-    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
     
+    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
     CIContext *context = [CIContext contextWithOptions:nil];
     CGImageRef myImage = [context
                           createCGImage:ciImage
@@ -145,11 +152,44 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
                                               CVPixelBufferGetHeight(pixelBuffer))];
     UIImage *liveImage = [UIImage imageWithCGImage:myImage];
     CGImageRelease(myImage);
-    CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
-
+    
+#ifdef notdef
     dispatch_async(dispatch_get_main_queue(), ^(void){
         self.liveImageView.image = liveImage;
         [self.liveImageView setNeedsDisplay];
+    });
+#endif
+    UIImage *ui = [UIImage imageWithCIImage:liveImage.CIImage];
+
+
+//    NSLog(@" w: %zu", CVPixelBufferGetWidth(pixelBuffer));
+//    NSLog(@" h: %zu", CVPixelBufferGetHeight(pixelBuffer));
+//    NSLog(@" bpr: %zu", CVPixelBufferGetBytesPerRow(pixelBuffer));
+    size_t len = CVPixelBufferGetHeight(pixelBuffer)*
+        CVPixelBufferGetBytesPerRow(pixelBuffer);
+    u_char *dupData = malloc(len);
+    assert(dupData);
+
+    u_char *pixels = (u_char *)CVPixelBufferGetBaseAddress(pixelBuffer);
+    memcpy(dupData, pixels, len);
+    NSData *pixData = [NSData dataWithBytes:dupData length:len];
+    
+    CIImage *dupciImage = [CIImage imageWithData:pixData];
+    context = [CIContext contextWithOptions:nil];
+    CGImageRef myDupImage = [context
+                          createCGImage:dupciImage
+                          fromRect:CGRectMake(0, 0,
+                                              CVPixelBufferGetWidth(pixelBuffer),
+                                              CVPixelBufferGetHeight(pixelBuffer))];
+    UIImage *dupImage = [UIImage imageWithCGImage:myDupImage];
+    free(dupData);
+    CGImageRelease(myDupImage);
+
+    CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
+
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        self.cbImageView.image = liveImage;
+        [self.cbImageView setNeedsDisplay];
     });
 
 #ifdef notdef
@@ -185,12 +225,14 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 }
 
 - (void) processImage:(u_char *)buffer w:(size_t)w h:(size_t)h {
+#ifdef notdef
 //    NSLog(@"process %zu %zu", w, h);
     
     cbImage.buffer = buffer;
     cbImage.width = w;
     cbImage.height = h;
     [cbImage setNeedsDisplay];
+#endif
 }
 
 @end

@@ -12,7 +12,7 @@
 
 @protocol VideoExhibitProto <NSObject>
 
-- (void) processImage:(u_char *)buffer w:(size_t)w h:(size_t)h;
+//- (void) processImage:(u_char *)buffer w:(size_t)w h:(size_t)h;
 
 @end
 

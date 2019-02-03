@@ -57,7 +57,7 @@
     //    captureSession.sessionPreset = AVCaptureSessionPreset1920x1080; // 1080p
     
     captureVideoPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
-    captureVideoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+//    captureVideoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
 
     return YES;
 }
@@ -86,8 +86,8 @@
         default:
             newOrientation = AVCaptureVideoOrientationPortrait;
     }
-    captureVideoPreviewLayer.connection.videoOrientation = newOrientation;
-    [captureConnection setVideoOrientation: newOrientation];
+//    captureVideoPreviewLayer.connection.videoOrientation = newOrientation;
+//    [captureConnection setVideoOrientation: newOrientation];
 
 #ifdef fileonly
     for (int i = 0; i < [[movieOutput connections] count]; i++) {
