@@ -182,4 +182,49 @@
 }
 #endif
 
+#ifdef samples
+- (UIColor*)pixelColorInImage:(UIImage*)image atX:(int)x atY:(int)y {
+    
+    CFDataRef pixelData = CGDataProviderCopyData(CGImageGetDataProvider(image.CGImage));
+    const UInt8* data = CFDataGetBytePtr(pixelData);
+    
+    int pixelInfo = ((image.size.width * y) + x ) * 4; // 4 bytes per pixel
+    
+    UInt8 red   = data[pixelInfo + 0];
+    UInt8 green = data[pixelInfo + 1];
+    UInt8 blue  = data[pixelInfo + 2];
+    UInt8 alpha = data[pixelInfo + 3];
+    CFRelease(pixelData);
+    
+    return [UIColor colorWithRed:red  /255.0f
+                           green:green/255.0f
+                            blue:blue /255.0f
+                           alpha:alpha/255.0f];
+}
+
+UIImage * ghostImage = [UIImage imageNamed:@"ghost"];
+CGImageRef ghostCGImage = [ghostImage CGImage];
+
+CGFloat ghostImageAspectRatio = ghostImage.size.width / ghostImage.size.height;
+NSInteger targetGhostWidth = inputWidth * 0.25;
+CGSize ghostSize = CGSizeMake(targetGhostWidth, targetGhostWidth / ghostImageAspectRatio);
+CGPoint ghostOrigin = CGPointMake(inputWidth * 0.5, inputHeight * 0.2);
+
+
+NSUInteger ghostBytesPerRow = bytesPerPixel * ghostSize.width;
+UInt32 * ghostPixels = (UInt32 *)calloc(ghostSize.width * ghostSize.height, sizeof(UInt32));
+
+CGContextRef ghostContext = CGBitmapContextCreate(ghostPixels, ghostSize.width, ghostSize.height,
+                                                  bitsPerComponent, ghostBytesPerRow, colorSpace,
+                                                  kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+CGContextDrawImage(ghostContext, CGRectMake(0, 0, ghostSize.width, ghostSize.height),ghostCGImage);
+
+// Create a new UIImage
+CGImageRef newCGImage = CGBitmapContextCreateImage(context);
+UIImage * processedImage = [UIImage imageWithCGImage:newCGImage];
+
+return processedImage;
+
+#endif
+
 @end
