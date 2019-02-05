@@ -143,22 +143,80 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
     
+    size_t w = CVPixelBufferGetWidth(pixelBuffer);
+    size_t h = CVPixelBufferGetHeight(pixelBuffer);
+    
     CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
     CIContext *context = [CIContext contextWithOptions:nil];
     CGImageRef myImage = [context
                           createCGImage:ciImage
-                          fromRect:CGRectMake(0, 0,
-                                              CVPixelBufferGetWidth(pixelBuffer),
-                                              CVPixelBufferGetHeight(pixelBuffer))];
+                          fromRect:CGRectMake(0, 0, w, h)];
     UIImage *liveImage = [UIImage imageWithCGImage:myImage];
-    CGImageRelease(myImage);
     
+    typedef UInt32 Pixel;
+#define Z   ((u_char)UINT8_MAX)
+#define BYTES_PER_PIXEL sizeof(UInt32) // rgba
+    
+#define PIXEL(r,g,b)    ((Pixel)(b)<<16| (Pixel)(g)<<8 | (Pixel)(r))
+#define PIXELA(r,g,b,a)    ((Pixel)(r)<<24| (Pixel)(g)<<16 | (Pixel)(b)<<8 | (Pixel)(a))
+
+    Pixel *pixels = calloc(w*h, sizeof(Pixel));
+    assert(pixels);
+    Pixel blue = PIXEL(0,0,Z);
+    Pixel green = PIXEL(0,Z,0);
+    Pixel red = PIXEL(Z,0,0);
+    Pixel white = PIXEL(Z,Z,Z);
+    Pixel yellow = PIXEL(Z,Z,0);
+    
+    for (size_t i=0; i < h*w; i++) {
+        pixels[i] = yellow;
+    }
+//    NSLog(@" pixel 2 = %08x:", pixels[1]);
+          
+    // create the bitmap context:
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef gtx = CGBitmapContextCreate(pixels, w, h,
+                                             8, BYTES_PER_PIXEL*w, colorSpace,
+                                             kCGImageAlphaNoneSkipLast);
+    assert(gtx);
+    CGColorSpaceRelease(colorSpace);
+
+    // create the image:
+    CGImageRef cgImage = CGBitmapContextCreateImage(gtx);
+    UIImage * uiImage = [[UIImage alloc] initWithCGImage:cgImage];
+    CGImageRelease(cgImage);
+    CGContextRelease(gtx);
+    CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
+    free(pixels);
+
+//    NSData * png = UIImagePNGRepresentation(uiimage);
+    
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        self.cbImageView.image = uiImage;
+        [self.cbImageView setNeedsDisplay];
+    });
+
+
+#ifdef OLD
+    CGContextRef dupContext = CGBitmapContextCreate(pixels, w, h,
+                                                      32, bytesPerRow, colorSpace,
+                                                      kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    CGContextDrawImage(dupContext, CGRectMake(0, 0, w, h), myImage);
+    
+    CGImageRelease(myImage);
+
+    // Create a new UIImage
+    CGImageRef newCGImage = CGBitmapContextCreateImage(context);
+    UIImage * processedImage = [UIImage imageWithCGImage:newCGImage];
+
 #ifdef notdef
     dispatch_async(dispatch_get_main_queue(), ^(void){
         self.liveImageView.image = liveImage;
         [self.liveImageView setNeedsDisplay];
     });
 #endif
+    
+#ifdef notdef
     UIImage *ui = [UIImage imageWithCIImage:liveImage.CIImage];
 
 
@@ -184,8 +242,8 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     UIImage *dupImage = [UIImage imageWithCGImage:myDupImage];
     free(dupData);
     CGImageRelease(myDupImage);
-
-    CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
+#endif
+    
 
     dispatch_async(dispatch_get_main_queue(), ^(void){
         self.cbImageView.image = liveImage;
@@ -222,6 +280,8 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     }
 #endif
 #endif
+#endif
+    
 }
 
 - (void) processImage:(u_char *)buffer w:(size_t)w h:(size_t)h {
