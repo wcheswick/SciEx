@@ -15,7 +15,6 @@
 @property (nonatomic, strong)   AVCaptureConnection *captureConnection;
 @property (nonatomic, strong)   AVCaptureVideoPreviewLayer *liveLayer;
 @property (nonatomic, strong)   AVCaptureVideoPreviewLayer *captureVideoPreviewLayer;
-
 @end
 
 @implementation VideoExhibitVC
@@ -139,19 +138,16 @@
     [captureSession stopRunning];
 }
 
-
 #ifdef notdef
 - (void) startVideoCaptureToBuffer {
     AVCaptureDeviceInput *capInput = [AVCaptureDeviceInput deviceInputWithDevice:videoDevice error:&error];
     if (capInput) [AVsession addInput:capInput];
     
-    for(AVCaptureDeviceFormat *vFormat in [videoDevice formats] )
-    {
+    for(AVCaptureDeviceFormat *vFormat in [videoDevice formats] ) {
         CMFormatDescriptionRef description= vFormat.formatDescription;
         float maxrate=((AVFrameRateRange*)[vFormat.videoSupportedFrameRateRanges objectAtIndex:0]).maxFrameRate;
         
-        if(maxrate>59 && CMFormatDescriptionGetMediaSubType(description)==kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)
-        {
+        if(maxrate>59 && CMFormatDescriptionGetMediaSubType(description)==kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) {
             if ( YES == [videoDevice lockForConfiguration:NULL] )
             {
                 videoDevice.activeFormat = vFormat;
@@ -174,8 +170,7 @@
     videoOut.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32ARGB)};
     videoOut.alwaysDiscardsLateVideoFrames=YES;
     
-    if (videoOut)
-    {
+    if (videoOut) {
         [AVsession addOutput:videoOut];
         videoConnection = [videoOut connectionWithMediaType:AVMediaTypeVideo];
     }

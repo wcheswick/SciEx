@@ -7,8 +7,9 @@
 //
 
 #import "ColorBlindVC.h"
-#import "PixelView.h"
 #import "Defines.h"
+#import "Pixel.h"
+#import "cb.h"
 
 @interface ColorBlindVC ()
 
@@ -17,15 +18,24 @@
 @property (nonatomic, strong)   UIImageView *liveImageView;
 @property (nonatomic, strong)   UIView *cbView;
 @property (nonatomic, strong)   UIImageView *cbImageView;
-@property (nonatomic, strong)   PixelView *cbImage;
+@property (assign, atomic)      BOOL finished;
 
 @end
+
+
+static Pixel *abgr = 0;
+static size_t w = 0;
+static size_t h = 0;
+
+static BOOL busy = NO;
+static int busyCount = 0;
 
 @implementation ColorBlindVC
 
 @synthesize top;
 @synthesize liveView, liveImageView;
 @synthesize cbView, cbImageView;
+@synthesize finished;
 
 - (id)init {
     self = [super init];
@@ -118,6 +128,9 @@
     } else {
         NSLog(@"XXX no camera available");
     }
+    finished = NO;
+
+    init_colorblind(TRITANOPIA);
 }
 
 - (void) viewDidAppear:(BOOL)animated {
@@ -125,32 +138,16 @@
 }
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
+    finished = YES;
     [self stopVideoCapture];
-    if (abgr)
+    if (abgr) {
         free(abgr);
+        NSLog(@"Freed");
+        abgr = 0;
+    }
+    end_colorblind();
     [self.navigationController popViewControllerAnimated:YES];
 }
-
-typedef UInt32 Pixel;
-
-#define Z   ((u_char)UINT8_MAX)
-#define BYTES_PER_PIXEL sizeof(UInt32) // rgba
-
-#define PIXEL(r,g,b)    ((Pixel)(b)<<16| (Pixel)(g)<<8 | (Pixel)(r))
-
-#define BLUE    PIXEL(0,0,Z)
-#define GREEN   PIXEL(0,Z,0)
-#define RED     PIXEL(Z,0,0)
-#define WHITE   PIXEL(Z,Z,Z)
-#define YELLOW  PIXEL(Z,Z,0)
-
-static Pixel *abgr = 0;
-static size_t w = 0;
-static size_t h = 0;
-
-
-static BOOL busy = NO;
-static int busyCount = 0;
 
 - (void)captureOutput:(AVCaptureOutput *)output
 didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
@@ -160,6 +157,9 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
             NSLog(@"busy %d", busyCount);
         return;
     }
+    if (finished)
+        return;
+    
     CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
     
@@ -179,21 +179,21 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
                           fromRect:[ciLiveImage extent]];
     
     UIImage *liveImage = [UIImage imageWithCGImage:liveImageRef];
-//    GCContextRelease(liveContext);
     
     dispatch_async(dispatch_get_main_queue(), ^(void){
         self.liveImageView.image = liveImage;
         [self.liveImageView setNeedsDisplay];
     });
     
-    CFDataRef rawData = CGDataProviderCopyData(CGImageGetDataProvider(liveImageRef));
+    CFDataRef  rawData = CGDataProviderCopyData(CGImageGetDataProvider(liveImageRef));
     const Pixel *livePixels = (Pixel *)CFDataGetBytePtr(rawData);
     
     for (size_t i=0; i < h*w; i++) {
-        abgr[i] = livePixels[i];
+        abgr[i] = livePixelToColorBlind(&livePixels[i]);
     }
     CGImageRelease(liveImageRef);
-
+    CFRelease(rawData);
+    
 //    NSLog(@" pixel 2 = %08x:", pixels[1]);
           
     // create the bitmap context:
@@ -212,110 +212,11 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     CGContextRelease(gtx);
     CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
 
-//    NSData * png = UIImagePNGRepresentation(uiimage);
-    
     dispatch_async(dispatch_get_main_queue(), ^(void){
         self.cbImageView.image = cbImage;
         [self.cbImageView setNeedsDisplay];
         busy = NO;
     });
-
-
-#ifdef OLD
-    CGContextRef dupContext = CGBitmapContextCreate(pixels, w, h,
-                                                      32, bytesPerRow, colorSpace,
-                                                      kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-    CGContextDrawImage(dupContext, CGRectMake(0, 0, w, h), myImage);
-    
-    CGImageRelease(myImage);
-
-    // Create a new UIImage
-    CGImageRef newCGImage = CGBitmapContextCreateImage(context);
-    UIImage * processedImage = [UIImage imageWithCGImage:newCGImage];
-
-#ifdef notdef
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        self.liveImageView.image = liveImage;
-        [self.liveImageView setNeedsDisplay];
-    });
-#endif
-    
-#ifdef notdef
-    UIImage *ui = [UIImage imageWithCIImage:liveImage.CIImage];
-
-
-//    NSLog(@" w: %zu", CVPixelBufferGetWidth(pixelBuffer));
-//    NSLog(@" h: %zu", CVPixelBufferGetHeight(pixelBuffer));
-//    NSLog(@" bpr: %zu", CVPixelBufferGetBytesPerRow(pixelBuffer));
-    size_t len = CVPixelBufferGetHeight(pixelBuffer)*
-        CVPixelBufferGetBytesPerRow(pixelBuffer);
-    u_char *dupData = malloc(len);
-    assert(dupData);
-
-    u_char *pixels = (u_char *)CVPixelBufferGetBaseAddress(pixelBuffer);
-    memcpy(dupData, pixels, len);
-    NSData *pixData = [NSData dataWithBytes:dupData length:len];
-    
-    CIImage *dupciImage = [CIImage imageWithData:pixData];
-    context = [CIContext contextWithOptions:nil];
-    CGImageRef myDupImage = [context
-                          createCGImage:dupciImage
-                          fromRect:CGRectMake(0, 0,
-                                              CVPixelBufferGetWidth(pixelBuffer),
-                                              CVPixelBufferGetHeight(pixelBuffer))];
-    UIImage *dupImage = [UIImage imageWithCGImage:myDupImage];
-    free(dupData);
-    CGImageRelease(myDupImage);
-#endif
-
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        self.cbImageView.image = liveImage;
-        [self.cbImageView setNeedsDisplay];
-    });
-
-#ifdef notdef
-    CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
-    size_t bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
-    size_t bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
-    size_t bpr = CVPixelBufferGetBytesPerRow(pixelBuffer);
-    size_t stride = bpr/bufferWidth;
-    unsigned char *pixel = (unsigned char *)CVPixelBufferGetBaseAddress(pixelBuffer);
-    
-    if (first) {
-        NSLog(@"%zu x %zu, %zu stride %lu", bufferWidth, bufferHeight, bpr, stride);
-        first = NO;
-    }
-    
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        [self->caller processImage:pixel w:bufferWidth h:bufferHeight];
-    });
-    
-#ifdef notdef
-    for( int row = 0; row < bufferHeight; row++ ) {
-        for( int column = 0; column < bufferWidth; column++ ) {
-            int r = pixel[0];
-            int g = pixel[1];
-            int b = pixel[2];
-            //            NSLog(@"%4d %4d %4d", r, g, b);
-            //            pixel[1] = 0; //  it sets the green element of each pixel to zero, which gives the entire frame a purple tint.
-            pixel += stride;
-        }
-    }
-#endif
-#endif
-#endif
-    
-}
-
-- (void) processImage:(u_char *)buffer w:(size_t)w h:(size_t)h {
-#ifdef notdef
-//    NSLog(@"process %zu %zu", w, h);
-    
-    cbImage.buffer = buffer;
-    cbImage.width = w;
-    cbImage.height = h;
-    [cbImage setNeedsDisplay];
-#endif
 }
 
 @end
