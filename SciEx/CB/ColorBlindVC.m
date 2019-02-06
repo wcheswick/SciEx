@@ -18,7 +18,6 @@
 @property (nonatomic, strong)   UIImageView *liveImageView;
 @property (nonatomic, strong)   UIView *cbView;
 @property (nonatomic, strong)   UIImageView *cbImageView;
-@property (assign, atomic)      BOOL finished;
 
 @end
 
@@ -35,7 +34,6 @@ static int busyCount = 0;
 @synthesize top;
 @synthesize liveView, liveImageView;
 @synthesize cbView, cbImageView;
-@synthesize finished;
 
 - (id)init {
     self = [super init];
@@ -128,24 +126,25 @@ static int busyCount = 0;
     } else {
         NSLog(@"XXX no camera available");
     }
-    finished = NO;
 
-    init_colorblind(TRITANOPIA);
+    init_colorblind(DEUTERANOPIA);
 }
 
 - (void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 }
 
-- (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
-    finished = YES;
-    [self stopVideoCapture];
+- (void) viewDidDisappear:(BOOL)animated {
     if (abgr) {
         free(abgr);
         NSLog(@"Freed");
         abgr = 0;
     }
     end_colorblind();
+}
+
+- (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
+    [self stopVideoCapture];
     [self.navigationController popViewControllerAnimated:YES];
 }
 
