@@ -18,6 +18,8 @@
 @property (nonatomic, strong)   UIImageView *liveImageView;
 @property (nonatomic, strong)   UIView *cbView;
 @property (nonatomic, strong)   UIImageView *cbImageView;
+@property (assign)              BOOL transformReady;
+@property (assign)              BOOL fullScreenCB;
 
 @end
 
@@ -34,13 +36,16 @@ static int busyCount = 0;
 @synthesize top;
 @synthesize liveView, liveImageView;
 @synthesize cbView, cbImageView;
+@synthesize transformReady;
+@synthesize fullScreenCB;
 
 - (id)init {
     self = [super init];
     if (self) {
-        exhibitTitle = @"What do the colorblind see?";
+        exhibitTitle = @"Color blind simulator";
         exhibitAvailable = YES;
         self.caller = self;
+        fullScreenCB = NO;
     }
     return self;
 }
@@ -53,6 +58,7 @@ static int busyCount = 0;
 //    self.navigationController.navigationBar.opaque = YES;
     self.navigationController.toolbarHidden = YES;
     
+    self.title = exhibitTitle;
     
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
@@ -69,22 +75,33 @@ static int busyCount = 0;
     top.layer.borderWidth = 0.5;
     top.layer.borderColor = [UIColor blackColor].CGColor;
     top.layer.cornerRadius = 10.0;
-    [self.view addSubview:top];
     
     liveView = [[UIView alloc] init];
-    liveView.backgroundColor = [UIColor yellowColor];
+    liveView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:liveView];
-    
     liveImageView = [[UIImageView alloc] init];
+    liveImageView.contentMode = UIViewContentModeScaleAspectFit;
     [liveView addSubview:liveImageView];
     
     cbView = [[UIView alloc] init];
-    cbView.backgroundColor = [UIColor orangeColor];
+    cbView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:cbView];
-    
     cbImageView = [[UIImageView alloc] init];
+    cbImageView.contentMode = UIViewContentModeScaleAspectFit;
     [cbView addSubview:cbImageView];
 
+    UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc]
+                                           initWithTarget:self
+                                           action:@selector(doSwipe:)];
+    swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+    [self.view addGestureRecognizer:swipeLeft];
+ 
+    UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc]
+                                           initWithTarget:self
+                                            action:@selector(doSwipe:)];
+    swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
+    [self.view addGestureRecognizer:swipeRight];
+    
     self.view.backgroundColor = [UIColor whiteColor];
 }
 
@@ -98,43 +115,94 @@ static int busyCount = 0;
     [self.navigationController setNavigationBarHidden:NO animated:YES];
     self.navigationController.navigationBar.opaque = YES;
     
+#ifdef OLD
     top.frame = self.view.frame;
     SET_VIEW_HEIGHT(top, 50);
     SET_VIEW_X(top, 0);
     [top setNeedsDisplay];
+#endif
     
-    CGRect f;
-    f.origin = CGPointMake(INSET, BELOW(top.frame) + SEP);
-    f.size = CGSizeMake(self.view.frame.size.width - 2*INSET,
-                        (self.view.frame.size.height - f.origin.y)/2);
-    liveView.frame = f;
-    [liveView setNeedsDisplay];
-    
-    liveImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height);
-    [liveImageView setNeedsDisplay];
-    
-    cbView.frame = liveView.frame;
-    SET_VIEW_Y(cbView, BELOW(liveView.frame) + SEP);
-    [cbView setNeedsDisplay];
-    
-    cbImageView.frame = liveImageView.frame;
-    [cbImageView setNeedsDisplay];
+    [self layoutViews];
 
+    transformReady = NO;
+    
     if ([self selectCamera:AVCaptureDevicePositionFront]) {
         [self setLiveFrameAndOrientation:liveView.frame];
-        [self startVideoCapture:liveView.frame.size liveView:nil];
+        [self startVideoCapture:liveView.frame.size];
     } else {
         NSLog(@"XXX no camera available");
     }
+}
 
-    init_colorblind(DEUTERANOPIA);
+- (void) layoutViews {
+    CGRect f;
+    if (fullScreenCB) {
+        f = liveView.frame;
+        f.size.width = 0;
+        liveView.frame = f;
+        f = liveImageView.frame;
+        f.size.width = 0;
+        liveImageView.frame = f;
+
+        f = cbView.frame;
+        f.origin.x = INSET;
+        f.size = CGSizeMake(self.view.frame.size.width - 2*INSET,
+                            (self.view.frame.size.height - f.origin.y));
+        cbView.frame = f;
+        cbImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height);
+    } else {
+        f.origin = CGPointMake(INSET, self.view.frame.origin.y);
+        f.size = CGSizeMake((self.view.frame.size.width - 2*INSET - INSET)/2.0,
+                            (self.view.frame.size.height - f.origin.y)/2);
+        liveView.frame = f;
+        liveImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height);
+        [liveImageView setNeedsDisplay];
+        
+        cbView.frame = liveView.frame;
+        SET_VIEW_X(cbView, RIGHT(liveView.frame) + INSET);
+        cbImageView.frame = liveImageView.frame;
+    }
+    [liveView setNeedsDisplay];
+    [cbView setNeedsDisplay];
+    [cbImageView setNeedsDisplay];
+}
+
+- (IBAction)doSwipe:(UISwipeGestureRecognizer *)sender {
+    if (sender.direction == UISwipeGestureRecognizerDirectionRight && !fullScreenCB)
+        return;
+    if (sender.direction == UISwipeGestureRecognizerDirectionLeft && fullScreenCB)
+        return;
+    
+    fullScreenCB = !fullScreenCB;
+    [UIView animateWithDuration:0.5
+                     animations:^(void) {
+                         [self layoutViews];
+                     }
+                     completion:nil];
 }
 
 - (void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+
+    UIActivityIndicatorView *busy = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    busy.frame = CGRectMake(0, 0, cbView.frame.size.width, cbView.frame.size.height);
+    busy.hidesWhenStopped = YES;
+    [busy startAnimating];
+    busy.backgroundColor = [UIColor whiteColor];
+    [cbView addSubview:busy];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        init_colorblind(PROTANOPIA);
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            [busy stopAnimating];
+            self.cbView.backgroundColor = [UIColor whiteColor];
+            self.transformReady = YES;
+        });
+    });
 }
 
 - (void) viewDidDisappear:(BOOL)animated {
+    transformReady = NO;
     if (abgr) {
         free(abgr);
         NSLog(@"Freed");
@@ -156,8 +224,6 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
             NSLog(@"busy %d", busyCount);
         return;
     }
-    if (finished)
-        return;
     
     CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
@@ -174,48 +240,65 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     CIImage *ciLiveImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
     CIContext *liveContext = [CIContext contextWithOptions:nil];
     CGImageRef liveImageRef = [liveContext
-                          createCGImage:ciLiveImage
-                          fromRect:[ciLiveImage extent]];
+                               createCGImage:ciLiveImage
+                               fromRect:[ciLiveImage extent]];
     
     UIImage *liveImage = [UIImage imageWithCGImage:liveImageRef];
     
+//    NSLog(@"o: %ld", (long)liveImage.imageOrientation);
+    
     dispatch_async(dispatch_get_main_queue(), ^(void){
-        self.liveImageView.image = liveImage;
+        self.liveImageView.image = [UIImage imageWithCGImage:[liveImage CGImage]
+                                                       scale:[liveImage scale]
+                                                 orientation: UIImageOrientationRight];
         [self.liveImageView setNeedsDisplay];
     });
     
-    CFDataRef  rawData = CGDataProviderCopyData(CGImageGetDataProvider(liveImageRef));
-    const Pixel *livePixels = (Pixel *)CFDataGetBytePtr(rawData);
-    
-    for (size_t i=0; i < h*w; i++) {
-        abgr[i] = livePixelToColorBlind(&livePixels[i]);
+    if (transformReady) {
+        CFDataRef rawData = CGDataProviderCopyData(CGImageGetDataProvider(liveImageRef));
+        const Pixel *livePixels = (Pixel *)CFDataGetBytePtr(rawData);
+        
+        for (size_t i=0; i < h*w; i++) {
+            abgr[i] = livePixelToColorBlind(&livePixels[i]);
+        }
+        CFRelease(rawData);
+        
+        //    NSLog(@" pixel 2 = %08x:", pixels[1]);
+        
+        // create the bitmap context:
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        CGContextRef gtx = CGBitmapContextCreate(abgr, w, h,
+                                                 8, BYTES_PER_PIXEL*w, colorSpace,
+                                                 kCGImageAlphaNoneSkipLast);
+        assert(gtx);
+#ifdef BS
+        CGFloat theta = M_PI/2.0;
+        CGFloat centerX = w/2.0;
+        CGFloat centerY = h/2.0;
+        CGFloat newX = centerX*cos(theta) - centerY*sin(theta);
+        CGFloat newY = centerX*sin(theta) + centerY*cos(theta);
+        
+        CGContextTranslateCTM(gtx, newX, newY);
+        CGContextRotateCTM(gtx, theta);
+#endif
+        CGColorSpaceRelease(colorSpace);
+        
+        // create the image:
+        CGImageRef cbImageRef = CGBitmapContextCreateImage(gtx);
+        UIImage *cbImage = [[UIImage alloc] initWithCGImage:cbImageRef
+                                                      scale:1.0
+                                                orientation:UIImageOrientationRight];
+        CGImageRelease(cbImageRef);
+        CGContextRelease(gtx);
+        
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            self.cbImageView.image = cbImage;
+            [self.cbImageView setNeedsDisplay];
+            busy = NO;
+        });
     }
-    CGImageRelease(liveImageRef);
-    CFRelease(rawData);
-    
-//    NSLog(@" pixel 2 = %08x:", pixels[1]);
-          
-    // create the bitmap context:
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef gtx = CGBitmapContextCreate(abgr, w, h,
-                                             8, BYTES_PER_PIXEL*w, colorSpace,
-                                             kCGImageAlphaNoneSkipLast);
-    assert(gtx);
-    CGColorSpaceRelease(colorSpace);
-
-    // create the image:
-    CGImageRef cbImageRef = CGBitmapContextCreateImage(gtx);
-    UIImage *cbImage = [[UIImage alloc] initWithCGImage:cbImageRef];
-    CGImageRelease(cbImageRef);
-    
-    CGContextRelease(gtx);
     CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
-
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        self.cbImageView.image = cbImage;
-        [self.cbImageView setNeedsDisplay];
-        busy = NO;
-    });
+    CGImageRelease(liveImageRef);
 }
 
 @end

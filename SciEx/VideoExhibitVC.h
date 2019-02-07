@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL) selectCamera:(AVCaptureDevicePosition) position;
 - (void) setLiveFrameAndOrientation: (CGRect) frame;
-- (void) startVideoCapture:(CGSize) capSize liveView:(nullable UIView *)liveView;
+- (void) startVideoCapture:(CGSize) capSize;
 - (void) stopVideoCapture;
 
 

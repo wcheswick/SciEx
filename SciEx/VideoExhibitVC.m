@@ -63,11 +63,12 @@
 
 - (void) setLiveFrameAndOrientation: (CGRect) frame  {
     captureVideoPreviewLayer.frame = frame;
-    
+
     // I am not sure what to do with this, or even if it is used at all:
     //    captureVideoPreviewLayer.connection.videoOrientation =
     //    [[UIDevice currentDevice] orientation];
-    
+#ifdef fileonly
+
     AVCaptureVideoOrientation newOrientation;
     switch ([[UIDevice currentDevice] orientation]) {
         case UIDeviceOrientationPortrait:
@@ -88,7 +89,6 @@
 //    captureVideoPreviewLayer.connection.videoOrientation = newOrientation;
 //    [captureConnection setVideoOrientation: newOrientation];
 
-#ifdef fileonly
     for (int i = 0; i < [[movieOutput connections] count]; i++) {
         AVCaptureConnection *capConn = [[movieOutput connections] objectAtIndex:i];
         if ([captureConnection isVideoOrientationSupported]) {
@@ -103,23 +103,15 @@
     // Do any additional setup after loading the view.
 }
 
-- (void) startVideoCapture:(CGSize) capSize
-                  liveView:(nullable UIView *)liveView {
+- (void) startVideoCapture:(CGSize) capSize {
     NSError *error;
     
     AVCaptureDeviceInput *capInput = [AVCaptureDeviceInput
-                                      deviceInputWithDevice:captureDevice
+                                    deviceInputWithDevice:captureDevice
                                       error:&error];
     if (capInput)
         [captureSession addInput:capInput];
     
-    if (liveView) {
-        liveLayer = [AVCaptureVideoPreviewLayer layerWithSession: captureSession];
-        liveLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-        liveLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
-        [liveView.layer addSublayer: liveLayer];
-    }
-
     AVCaptureVideoDataOutput *videoOut = [[AVCaptureVideoDataOutput alloc] init];
     dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
     [videoOut setSampleBufferDelegate:self queue:videoQueue];
