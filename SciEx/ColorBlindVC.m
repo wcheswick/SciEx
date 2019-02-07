@@ -18,11 +18,15 @@
 @property (nonatomic, strong)   UIImageView *liveImageView;
 @property (nonatomic, strong)   UIView *cbView;
 @property (nonatomic, strong)   UIImageView *cbImageView;
+
+@property (nonatomic, strong)   UICollectionView *srcCollectionView;
+@property (nonatomic, strong)   UICollectionView *defCollectionView;
+@property (nonatomic, strong)   UICollectionViewFlowLayout *layout;
+
 @property (assign)              BOOL transformReady;
 @property (assign)              BOOL fullScreenCB;
 
 @end
-
 
 static Pixel *abgr = 0;
 static size_t w = 0;
@@ -33,11 +37,34 @@ static int busyCount = 0;
 
 @implementation ColorBlindVC
 
+static NSString * const srcReuseIdentifier = @"cbCells";
+static NSString * const defReuseIdentifier = @"DefCell";
+
+static char *src_images[] = {
+    "cube.jpeg",
+    "ishihara6.jpeg",
+    "ishihara8.jpeg",
+    "ishihara25.jpeg",
+    "ishihara29.jpeg",
+    "ishihara45.jpeg",
+    "ishihara56.jpeg",
+    "ishihara74.gif",
+    "rainbow.gif",
+    0,
+};
+#define NSRC    (sizeof(src_images)/(sizeof(char *)))    // plus live
+
+#define SRC_TAG 1000
+#define DEF_TAG 1001
+#define LIVE_TAG    2000
+
 @synthesize top;
 @synthesize liveView, liveImageView;
 @synthesize cbView, cbImageView;
 @synthesize transformReady;
 @synthesize fullScreenCB;
+@synthesize srcCollectionView, defCollectionView;
+@synthesize layout;
 
 - (id)init {
     self = [super init];
@@ -65,6 +92,13 @@ static int busyCount = 0;
                                       target:self action:@selector(doDone:)];
     self.navigationItem.leftBarButtonItem = leftBarButton;
     
+    
+    layout = [[UICollectionViewFlowLayout alloc] init];
+    layout.sectionInset = UIEdgeInsetsMake(INSET, INSET, INSET, INSET);
+    layout.minimumLineSpacing = 5;
+    layout.minimumInteritemSpacing = 5;
+
+#ifdef NOTUSED
     top = [[UILabel alloc] init];
     top.text = self.exhibitTitle;
     top.textColor = [UIColor blueColor];
@@ -75,6 +109,7 @@ static int busyCount = 0;
     top.layer.borderWidth = 0.5;
     top.layer.borderColor = [UIColor blackColor].CGColor;
     top.layer.cornerRadius = 10.0;
+#endif
     
     liveView = [[UIView alloc] init];
     liveView.backgroundColor = [UIColor whiteColor];
@@ -83,13 +118,45 @@ static int busyCount = 0;
     liveImageView.contentMode = UIViewContentModeScaleAspectFit;
     [liveView addSubview:liveImageView];
     
+    srcCollectionView = [[UICollectionView alloc]
+                      initWithFrame:CGRectZero
+                      collectionViewLayout:layout];
+    srcCollectionView.dataSource = self;
+    srcCollectionView.delegate = self;
+    
+    // Uncomment the following line to preserve selection between presentations
+    // self.clearsSelectionOnViewWillAppear = NO;
+    
+    // Register cell classes
+    [srcCollectionView registerClass:[UICollectionViewCell class]
+       forCellWithReuseIdentifier:srcReuseIdentifier];
+    srcCollectionView.backgroundColor = [UIColor whiteColor];
+    srcCollectionView.tag = SRC_TAG;
+    [liveView addSubview:srcCollectionView];
+
     cbView = [[UIView alloc] init];
     cbView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:cbView];
     cbImageView = [[UIImageView alloc] init];
     cbImageView.contentMode = UIViewContentModeScaleAspectFit;
     [cbView addSubview:cbImageView];
-
+    
+    defCollectionView = [[UICollectionView alloc]
+                         initWithFrame:CGRectZero
+                         collectionViewLayout:layout];
+    defCollectionView.dataSource = self;
+    defCollectionView.delegate = self;
+    
+    // Uncomment the following line to preserve selection between presentations
+    // self.clearsSelectionOnViewWillAppear = NO;
+    
+    // Register cell classes
+    [defCollectionView registerClass:[UICollectionViewCell class]
+          forCellWithReuseIdentifier:srcReuseIdentifier];
+    defCollectionView.backgroundColor = [UIColor whiteColor];
+    defCollectionView.tag = DEF_TAG;
+    [cbView addSubview:defCollectionView];
+    
     UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc]
                                            initWithTarget:self
                                            action:@selector(doSwipe:)];
@@ -149,22 +216,35 @@ static int busyCount = 0;
         f.size = CGSizeMake(self.view.frame.size.width - 2*INSET,
                             (self.view.frame.size.height - f.origin.y));
         cbView.frame = f;
-        cbImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height);
+        cbImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height*0.6);
+        
+        f.origin = CGPointMake(INSET, BELOW(cbImageView.frame) + SEP);
+        f.size = CGSizeMake(f.size.width - 2*INSET, cbView.frame.size.height - f.origin.y);
+        defCollectionView.frame = f;
     } else {
         f.origin = CGPointMake(INSET, self.view.frame.origin.y);
         f.size = CGSizeMake((self.view.frame.size.width - 2*INSET - INSET)/2.0,
-                            (self.view.frame.size.height - f.origin.y)/2);
+                            (self.view.frame.size.height - f.origin.y));
         liveView.frame = f;
         liveImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height);
         [liveImageView setNeedsDisplay];
         
+        f.origin = CGPointMake(INSET, BELOW(liveImageView.frame) + SEP);
+        f.size = CGSizeMake(f.size.width - 2*INSET, liveView.frame.size.height - f.origin.y);
+        srcCollectionView.frame = f;
+
         cbView.frame = liveView.frame;
         SET_VIEW_X(cbView, RIGHT(liveView.frame) + INSET);
         cbImageView.frame = liveImageView.frame;
+        
+        f.origin = CGPointMake(INSET, BELOW(cbImageView.frame) + SEP);
+        f.size = CGSizeMake(f.size.width - 2*INSET, cbView.frame.size.height - f.origin.y);
+        defCollectionView.frame = f;
     }
     [liveView setNeedsDisplay];
     [cbView setNeedsDisplay];
     [cbImageView setNeedsDisplay];
+    [defCollectionView setNeedsLayout];
 }
 
 - (IBAction)doSwipe:(UISwipeGestureRecognizer *)sender {
@@ -192,7 +272,7 @@ static int busyCount = 0;
     [cbView addSubview:busy];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        init_colorblind(PROTANOPIA);
+        init_colorblind(TRITANOPIA);
         dispatch_async(dispatch_get_main_queue(), ^(void){
             [busy stopAnimating];
             self.cbView.backgroundColor = [UIColor whiteColor];
@@ -243,17 +323,19 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
                                createCGImage:ciLiveImage
                                fromRect:[ciLiveImage extent]];
     
-    UIImage *liveImage = [UIImage imageWithCGImage:liveImageRef];
-    
-//    NSLog(@"o: %ld", (long)liveImage.imageOrientation);
-    
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        self.liveImageView.image = [UIImage imageWithCGImage:[liveImage CGImage]
-                                                       scale:[liveImage scale]
-                                                 orientation: UIImageOrientationRight];
-        [self.liveImageView setNeedsDisplay];
-    });
-    
+    if (!fullScreenCB) {
+        UIImage *liveImage = [UIImage imageWithCGImage:liveImageRef];
+        
+        //    NSLog(@"o: %ld", (long)liveImage.imageOrientation);
+        
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            self.liveImageView.image = [UIImage imageWithCGImage:[liveImage CGImage]
+                                                           scale:[liveImage scale]
+                                                     orientation: UIImageOrientationRight];
+            [self.liveImageView setNeedsDisplay];
+        });
+    }
+
     if (transformReady) {
         CFDataRef rawData = CGDataProviderCopyData(CGImageGetDataProvider(liveImageRef));
         const Pixel *livePixels = (Pixel *)CFDataGetBytePtr(rawData);
@@ -285,20 +367,103 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         
         // create the image:
         CGImageRef cbImageRef = CGBitmapContextCreateImage(gtx);
-        UIImage *cbImage = [[UIImage alloc] initWithCGImage:cbImageRef
-                                                      scale:1.0
-                                                orientation:UIImageOrientationRight];
+        UIImage *cbImage = [UIImage imageWithCGImage:cbImageRef];
+        
         CGImageRelease(cbImageRef);
         CGContextRelease(gtx);
         
         dispatch_async(dispatch_get_main_queue(), ^(void){
-            self.cbImageView.image = cbImage;
+            self.cbImageView.image = [UIImage imageWithCGImage:[cbImage CGImage]
+                                                         scale:[cbImage scale]
+                                                   orientation: UIImageOrientationRight];;
             [self.cbImageView setNeedsDisplay];
             busy = NO;
         });
     }
     CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
     CGImageRelease(liveImageRef);
+}
+
+
+#pragma mark <UICollectionViewDataSource>
+
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    if (collectionView.tag == DEF_TAG) {
+        int i;
+        for (i=0; deficits[i].name; i++) {  // run through the available color deficits
+            ;
+        }
+        return i;
+    } else {
+        NSLog(@" NSRC = %lu", NSRC);
+        return NSRC + 1;   // live
+    }
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView
+                  cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    UICollectionViewCell *cell;
+    UILabel *label = [[UILabel alloc]
+                      initWithFrame:CGRectMake(0, 0,
+                                               cell.frame.size.width,
+                                               cell.frame.size.height)];
+    if (collectionView.tag == DEF_TAG) {
+        cell = [collectionView dequeueReusableCellWithReuseIdentifier:defReuseIdentifier
+                                                         forIndexPath:indexPath];
+        label.text = [NSString stringWithUTF8String: deficits[indexPath.row].name];
+        //[NSString stringWithUTF8String: deficits[indexPath.row].description];
+    } else {
+        cell = [collectionView dequeueReusableCellWithReuseIdentifier:srcReuseIdentifier
+                                                         forIndexPath:indexPath];
+        if (indexPath.row == 0) {   // Live button
+            label.text = @"Live";
+        } else {    // one of our images
+            NSString *imageName = [NSString stringWithUTF8String:src_images[indexPath.row]];
+            NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:nil];
+            assert(imagePath);
+            UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
+            assert(image);
+            UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+            [cell.contentView addSubview:imageView];
+        }
+    }
+    
+    label.textColor = [UIColor blueColor];
+    label.numberOfLines = 0;
+    label.lineBreakMode = NSLineBreakByWordWrapping;
+    label.textAlignment = NSTextAlignmentCenter;
+    label.font = [UIFont boldSystemFontOfSize:20];
+    label.layer.borderWidth = 0.5;
+    label.layer.borderColor = [UIColor blackColor].CGColor;
+    label.layer.cornerRadius = 10.0;
+    [cell addSubview:label];
+    return cell;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView
+                  layout:(UICollectionViewLayout *)collectionViewLayout
+  sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return CGSizeMake(200, 100);
+}
+
+- (void)collectionView:(UICollectionView *)collectionView
+didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    if (collectionView.tag == DEF_TAG) {
+        ColorblindDeficiency def = (ColorblindDeficiency)indexPath.row;
+        NSString *defName = [NSString stringWithUTF8String:deficits[def].name];
+        NSLog(@"select deficit %@", defName);
+     } else {
+         if (indexPath.row == 0)
+             NSLog(@"select live source");
+         else {
+             NSString *source = [NSString stringWithUTF8String:src_images[indexPath.row]];
+             NSLog(@"select source %@", source);
+         }
+    }
 }
 
 @end

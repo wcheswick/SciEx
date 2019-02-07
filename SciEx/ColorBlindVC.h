@@ -10,6 +10,9 @@
 #import "VideoExhibitVC.h"
 
 @interface ColorBlindVC : VideoExhibitVC
-    <VideoExhibitProto>
+    <VideoExhibitProto,
+    UICollectionViewDelegate,
+    UICollectionViewDataSource,
+    UICollectionViewDelegateFlowLayout>
 
 @end

@@ -12,6 +12,7 @@
 #import "ColorBlindVC.h"
 #import "LotteryVC.h"
 #import "DDVC.h"
+#import "ChatVC.h"
 #import "Defines.h"
 
 @interface MainVC ()
@@ -44,6 +45,7 @@ static NSString * const reuseIdentifier = @"Cell";
                    [[ColorBlindVC alloc] init],
                    [[LotteryVC alloc] init],
                    [[DDVC alloc] init],
+                   [[ChatVC alloc] init],
                    nil];
     
 //    self.navigationController.navigationBar.hidden = YES;
