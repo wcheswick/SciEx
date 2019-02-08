@@ -37,8 +37,9 @@ static int busyCount = 0;
 
 @implementation ColorBlindVC
 
-static NSString * const srcReuseIdentifier = @"cbCells";
-static NSString * const defReuseIdentifier = @"DefCell";
+static NSString * const reuseIdentifier = @"cbCells";
+//static NSString * const srcReuseIdentifier = @"cbCells";
+//static NSString * const defReuseIdentifier = @"DefCell";
 
 static char *src_images[] = {
     "cube.jpeg",
@@ -52,11 +53,17 @@ static char *src_images[] = {
     "rainbow.gif",
     0,
 };
-#define NSRC    (sizeof(src_images)/(sizeof(char *)))    // plus live
+#define NSRC    ((sizeof(src_images)/(sizeof(char *)))-1)    // plus live
 
 #define SRC_TAG 1000
 #define DEF_TAG 1001
 #define LIVE_TAG    2000
+
+#define IMAGE_BUTTON_W    70
+#define IMAGE_BUTTON_H    IMAGE_BUTTON_W
+
+#define DEF_BUTTON_W    120
+#define DEF_BUTTON_H    60
 
 @synthesize top;
 @synthesize liveView, liveImageView;
@@ -95,8 +102,8 @@ static char *src_images[] = {
     
     layout = [[UICollectionViewFlowLayout alloc] init];
     layout.sectionInset = UIEdgeInsetsMake(INSET, INSET, INSET, INSET);
-    layout.minimumLineSpacing = 5;
-    layout.minimumInteritemSpacing = 5;
+    layout.minimumLineSpacing = 1;
+    layout.minimumInteritemSpacing = 1;
 
 #ifdef NOTUSED
     top = [[UILabel alloc] init];
@@ -129,13 +136,12 @@ static char *src_images[] = {
     
     // Register cell classes
     [srcCollectionView registerClass:[UICollectionViewCell class]
-       forCellWithReuseIdentifier:srcReuseIdentifier];
+       forCellWithReuseIdentifier:reuseIdentifier];
     srcCollectionView.backgroundColor = [UIColor whiteColor];
     srcCollectionView.tag = SRC_TAG;
     [liveView addSubview:srcCollectionView];
 
     cbView = [[UIView alloc] init];
-    cbView.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:cbView];
     cbImageView = [[UIImageView alloc] init];
     cbImageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -152,7 +158,7 @@ static char *src_images[] = {
     
     // Register cell classes
     [defCollectionView registerClass:[UICollectionViewCell class]
-          forCellWithReuseIdentifier:srcReuseIdentifier];
+          forCellWithReuseIdentifier:reuseIdentifier];
     defCollectionView.backgroundColor = [UIColor whiteColor];
     defCollectionView.tag = DEF_TAG;
     [cbView addSubview:defCollectionView];
@@ -226,7 +232,7 @@ static char *src_images[] = {
         f.size = CGSizeMake((self.view.frame.size.width - 2*INSET - INSET)/2.0,
                             (self.view.frame.size.height - f.origin.y));
         liveView.frame = f;
-        liveImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height);
+        liveImageView.frame = CGRectMake(0, 0, f.size.width, f.size.height*0.65);
         [liveImageView setNeedsDisplay];
         
         f.origin = CGPointMake(INSET, BELOW(liveImageView.frame) + SEP);
@@ -264,12 +270,13 @@ static char *src_images[] = {
 - (void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    UIActivityIndicatorView *busy = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    busy.frame = CGRectMake(0, 0, cbView.frame.size.width, cbView.frame.size.height);
+    UIActivityIndicatorView *busy = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    busy.frame = CGRectMake(0, 0, cbImageView.frame.size.width, cbImageView.frame.size.height);
     busy.hidesWhenStopped = YES;
+    busy.backgroundColor = [UIColor darkGrayColor];
     [busy startAnimating];
     busy.backgroundColor = [UIColor whiteColor];
-    [cbView addSubview:busy];
+    [cbImageView addSubview:busy];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         init_colorblind(TRITANOPIA);
@@ -397,30 +404,34 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         for (i=0; deficits[i].name; i++) {  // run through the available color deficits
             ;
         }
+        NSLog(@"inputs: %d", i);
         return i;
     } else {
         NSLog(@" NSRC = %lu", NSRC);
-        return NSRC + 1;   // live
+        return NSRC + 1;   // live + others
     }
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView
                   cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    UICollectionViewCell *cell;
-    UILabel *label = [[UILabel alloc]
-                      initWithFrame:CGRectMake(0, 0,
-                                               cell.frame.size.width,
-                                               cell.frame.size.height)];
+    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier
+                                                                          forIndexPath:indexPath];;
     if (collectionView.tag == DEF_TAG) {
-        cell = [collectionView dequeueReusableCellWithReuseIdentifier:defReuseIdentifier
-                                                         forIndexPath:indexPath];
+        UILabel *label = [[UILabel alloc]
+                          initWithFrame:CGRectMake(0, 0,
+                                                   cell.frame.size.width,
+                                                   cell.frame.size.height)];
         label.text = [NSString stringWithUTF8String: deficits[indexPath.row].name];
+        [cell addSubview:label];
         //[NSString stringWithUTF8String: deficits[indexPath.row].description];
     } else {
-        cell = [collectionView dequeueReusableCellWithReuseIdentifier:srcReuseIdentifier
-                                                         forIndexPath:indexPath];
         if (indexPath.row == 0) {   // Live button
-            label.text = @"Live";
+            UILabel *label = [[UILabel alloc]
+                              initWithFrame:CGRectMake(0, 0,
+                                                       cell.frame.size.width,
+                                                       cell.frame.size.height)];
+             label.text = @"Live";
+            [cell addSubview:label];
         } else {    // one of our images
             NSString *imageName = [NSString stringWithUTF8String:src_images[indexPath.row]];
             NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:nil];
@@ -428,10 +439,15 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
             UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
             assert(image);
             UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+            imageView.layer.borderColor = [UIColor blueColor].CGColor;
+            imageView.layer.borderWidth = 0.5;
+            imageView.layer.cornerRadius = 5.0;
+            imageView.frame = cell.contentView.frame;
             [cell.contentView addSubview:imageView];
         }
     }
     
+#ifdef notdef
     label.textColor = [UIColor blueColor];
     label.numberOfLines = 0;
     label.lineBreakMode = NSLineBreakByWordWrapping;
@@ -441,13 +457,18 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     label.layer.borderColor = [UIColor blackColor].CGColor;
     label.layer.cornerRadius = 10.0;
     [cell addSubview:label];
+#endif
     return cell;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView
                   layout:(UICollectionViewLayout *)collectionViewLayout
   sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(200, 100);
+    if (collectionView.tag == DEF_TAG) {
+        return CGSizeMake(IMAGE_BUTTON_W, IMAGE_BUTTON_H);
+    } else {
+        return CGSizeMake(DEF_BUTTON_W, DEF_BUTTON_H);
+    }
 }
 
 - (void)collectionView:(UICollectionView *)collectionView
