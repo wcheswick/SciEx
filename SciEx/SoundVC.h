@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "ExhibitVC.h"
+#import "AudioExhibitVC.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SoundVC : ExhibitVC
+@interface SoundVC : AudioExhibitVC <AudioExhibitProto>
 
 @end
 

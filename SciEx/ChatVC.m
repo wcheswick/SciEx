@@ -19,7 +19,7 @@
 - (id)init {
     self = [super init];
     if (self) {
-        exhibitTitle = @"The Chatanooga Children's discovery portrait style station";
+        exhibitTitle = @"The Chatanooga Children's discovery Portrait Style Station";
         exhibitAvailable = NO;
     }
     return self;
@@ -37,6 +37,7 @@
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                       target:self action:@selector(doDone:)];
     self.navigationItem.leftBarButtonItem = leftBarButton;
+    
     
     self.view.backgroundColor = [UIColor whiteColor];
 }

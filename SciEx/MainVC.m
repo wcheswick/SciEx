@@ -130,7 +130,7 @@ static NSString * const reuseIdentifier = @"Cell";
 - (void)collectionView:(UICollectionView *)collectionView
 didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     ExhibitVC *exhibitView = (ExhibitVC *)[exhibitList objectAtIndex:indexPath.row];
-    NSLog(@"selected item %ld, %@", (long)indexPath.row, [exhibitView title]);
+    NSLog(@"selected item %ld, '%@'", (long)indexPath.row, exhibitView.exhibitTitle);
     [self.navigationController
      pushViewController:exhibitView
      animated: YES];

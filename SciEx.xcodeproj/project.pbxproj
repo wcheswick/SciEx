@@ -41,6 +41,7 @@
 		FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4A2203620300E99FF1 /* ExhibitVC.m */; };
 		FB52CA4E2203A7DE00E99FF1 /* VideoExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */; };
 		FB52CA512204C4E300E99FF1 /* PixelView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA502204C4E300E99FF1 /* PixelView.m */; };
+		FBA89A612210CB1D00CCE74B /* AudioExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A5F2210CB1D00CCE74B /* AudioExhibitVC.m */; };
 		FBC99806220C7C62002877C7 /* ChatVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FBC99805220C7C62002877C7 /* ChatVC.m */; };
 		FBD79454220B290300FC09D8 /* ishihara74.gif in Resources */ = {isa = PBXBuildFile; fileRef = FBD7944A220B290200FC09D8 /* ishihara74.gif */; };
 		FBD79455220B290300FC09D8 /* ishihara6.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FBD7944B220B290200FC09D8 /* ishihara6.jpeg */; };
@@ -116,6 +117,8 @@
 		FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoExhibitVC.m; sourceTree = "<group>"; };
 		FB52CA4F2204C4E300E99FF1 /* PixelView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PixelView.h; sourceTree = "<group>"; };
 		FB52CA502204C4E300E99FF1 /* PixelView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PixelView.m; sourceTree = "<group>"; };
+		FBA89A5F2210CB1D00CCE74B /* AudioExhibitVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioExhibitVC.m; sourceTree = "<group>"; };
+		FBA89A602210CB1D00CCE74B /* AudioExhibitVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioExhibitVC.h; sourceTree = "<group>"; };
 		FBC99804220C7C62002877C7 /* ChatVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChatVC.h; sourceTree = "<group>"; };
 		FBC99805220C7C62002877C7 /* ChatVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChatVC.m; sourceTree = "<group>"; };
 		FBD79446220B266000FC09D8 /* Pixel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Pixel.h; sourceTree = "<group>"; };
@@ -173,11 +176,14 @@
 				FB52CA4A2203620300E99FF1 /* ExhibitVC.m */,
 				FB52CA4C2203A7DE00E99FF1 /* VideoExhibitVC.h */,
 				FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */,
+				FBA89A602210CB1D00CCE74B /* AudioExhibitVC.h */,
+				FBA89A5F2210CB1D00CCE74B /* AudioExhibitVC.m */,
 				FB52C9EB22034F7900E99FF1 /* SoundVC.h */,
 				FB52C9EC22034F7900E99FF1 /* SoundVC.m */,
 				FB52CA4122035F6D00E99FF1 /* ColorBlindVC.h */,
 				FB52CA4022035F6D00E99FF1 /* ColorBlindVC.m */,
 				FBD79447220B27EE00FC09D8 /* CB */,
+				FB52C9EE2203588600E99FF1 /* Sounds */,
 				FB52CA4422035FA700E99FF1 /* LotteryVC.h */,
 				FB52CA4322035FA700E99FF1 /* LotteryVC.m */,
 				FB52CA472203602000E99FF1 /* DDVC.h */,
@@ -187,7 +193,6 @@
 				FB52CA4F2204C4E300E99FF1 /* PixelView.h */,
 				FB52CA502204C4E300E99FF1 /* PixelView.m */,
 				FB52CA3722035ADB00E99FF1 /* Lottery */,
-				FB52C9EE2203588600E99FF1 /* Sounds */,
 				FB52C9DA2203444B00E99FF1 /* Assets.xcassets */,
 				FB52C9DC2203444B00E99FF1 /* LaunchScreen.storyboard */,
 				FB52C9DF2203444B00E99FF1 /* Info.plist */,
@@ -404,6 +409,7 @@
 				FB52CA482203602000E99FF1 /* DDVC.m in Sources */,
 				FB52C9ED22034F7900E99FF1 /* SoundVC.m in Sources */,
 				FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */,
+				FBA89A612210CB1D00CCE74B /* AudioExhibitVC.m in Sources */,
 				FBD7946C220B2B3000FC09D8 /* cb.c in Sources */,
 				FB52C9CD2203444A00E99FF1 /* AppDelegate.m in Sources */,
 				FB52CA4E2203A7DE00E99FF1 /* VideoExhibitVC.m in Sources */,
