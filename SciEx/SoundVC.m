@@ -7,12 +7,13 @@
 //
 
 #import "SoundVC.h"
+#import "WaveView.h"
 #import "Defines.h"
 
 @interface SoundVC ()
 
 @property (nonatomic, strong)   UIView *sourceView;
-@property (nonatomic, strong)   UIView *graphView;
+@property (nonatomic, strong)   WaveView *waveView;
 @property (nonatomic, strong)   UIView *FFTView;
 
 @property (nonatomic, strong)   UIButton *mikeButton;
@@ -22,7 +23,7 @@
 @implementation SoundVC
 
 @synthesize sourceView;
-@synthesize graphView;
+@synthesize waveView;
 @synthesize FFTView;
 @synthesize mikeButton;
 
@@ -67,8 +68,12 @@
     SET_VIEW_HEIGHT(sourceView, BELOW(mikeButton.frame));
     SET_VIEW_WIDTH(sourceView, RIGHT(mikeButton.frame));
 
-    graphView = [[UIView alloc] init];
-    [self.view addSubview:graphView];
+    waveView = [[WaveView alloc] init];
+    waveView.backgroundColor = [UIColor yellowColor];
+    waveView.layer.borderColor = [UIColor blackColor].CGColor;
+    waveView.layer.borderWidth = 0.5;
+    waveView.layer.cornerRadius = 1.0;
+    [self.view addSubview:waveView];
 
     FFTView = [[UIView alloc] init];
     [self.view addSubview:FFTView];
@@ -87,14 +92,71 @@
     self.navigationController.navigationBar.opaque = YES;
     
     SET_VIEW_Y(sourceView, self.view.frame.size.height - sourceView.frame.size.height);
+    [sourceView setNeedsDisplay];
+    
+#define WAVE_H    200
+    waveView.frame = CGRectMake(INSET, sourceView.frame.origin.y - SEP - WAVE_H,
+                                self.view.frame.size.width - 2*INSET, WAVE_H);
+    [waveView setNeedsLayout];
 }
 
-- (IBAction)doMike:(UISwipeGestureRecognizer *)sender {
+- (IBAction)doMike:(UIButton *)sender {
     mikeButton.selected = !mikeButton.selected;
-    if (mikeButton.selected)
-        [self startAudioCapture];
-    else
+    if (mikeButton.selected) {
+        NSString *err = [self startAudioCapture];
+        if (err) {
+            mikeButton.selected = NO;
+            UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Could not start microphone"
+                                                                           message:err
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Dismiss"
+                                                                    style:UIAlertActionStyleDefault
+                                                                  handler:^(UIAlertAction * action) {
+                                                                      ;
+                                                                  }
+                                            ];
+            [alert addAction:defaultAction];
+            [self presentViewController:alert animated:YES completion:nil];
+        }
+    } else
         [self stopAudioCapture];
+}
+
+static u_long inputCount = 0;
+
+// The microphone has delivered one or more buffers of sound.
+
+- (void)captureOutput:(AVCaptureOutput *)captureOutput
+didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+       fromConnection:(AVCaptureConnection *)connection {
+
+    size_t sampleSize = CMSampleBufferGetSampleSize(sampleBuffer,0);
+    assert(sampleSize == sizeof(Sample));
+    size_t sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
+    size_t sampleLength = CMSampleBufferGetTotalSampleSize(sampleBuffer);
+    assert(sampleSize * sampleCount == sampleLength);
+    
+    if (sampleLength > samples_alloc) {
+        samples_alloc = sampleLength;
+        samples = (Sample *)realloc(samples, samples_alloc);
+        assert(samples);
+    }
+
+    CMBlockBufferRef blockbuff = CMSampleBufferGetDataBuffer(sampleBuffer);
+    OSStatus stat = CMBlockBufferCopyDataBytes(blockbuff,
+                                      0,
+                                      sampleLength,
+                                      samples);
+    if (stat != kCMBlockBufferNoErr) {
+        NSLog(@"sound block fetch error %d", (int)stat);
+        return;
+    }
+    inputCount += sampleCount;
+    
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        [self.waveView showSamples:0 count:sampleCount];
+    });
 }
 
 - (void) newAudioData: (NSData *)buffer {
@@ -156,10 +218,6 @@
                            to:sToMs(processStart + ampStartSampleNumber + processLen)];
     [processedView plotClipsFrom:0 width:processLen];
 #endif
-}
-
-- (void) atEOFOrStopped {
-    
 }
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {

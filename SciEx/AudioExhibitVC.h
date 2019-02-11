@@ -10,25 +10,12 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 
-#define DEFAULT_SAMPLE_RATE     44100
-#define DEFAULT_SAMPLE_TYPE     short
-#define RAW_SAMPLE_TYPE         short
-
-@protocol AudioExhibitProto <NSObject>
-
-- (void) newAudioData: (NSData *)buffer;
-- (void) atEOFOrStopped;
-
-@end
-
 #import "ExhibitVC.h"
+#import "AudioDefines.h"
 
 @interface AudioExhibitVC : ExhibitVC
-<AVCaptureAudioDataOutputSampleBufferDelegate> {
-    __unsafe_unretained id<AudioExhibitProto> caller;
-}
+<AVCaptureAudioDataOutputSampleBufferDelegate>
 
-@property (assign)      id<AudioExhibitProto>caller;
 
 - (NSString *) startAudioCapture;
 - (void) stopAudioCapture;

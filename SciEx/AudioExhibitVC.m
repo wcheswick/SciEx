@@ -8,6 +8,11 @@
 
 #import "AudioExhibitVC.h"
 
+Sample *samples = 0;
+size_t samples_alloc = 0;
+size_t samples_len = 0;
+size_t samples_start = 0;
+
 @interface AudioExhibitVC ()
 
 @property (nonatomic, strong)   AVAudioSession *session;
@@ -26,7 +31,6 @@
 @synthesize audioDevice, audioInput;
 @synthesize audioDataOutput;
 @synthesize sampleRate, mikeBlockNumber;
-@synthesize caller;
 
 
 - (id)init {
@@ -55,6 +59,13 @@
 - (NSString *) startAudioCapture {
     NSError *error;
     
+    NSDictionary *settings = [NSDictionary dictionaryWithObjectsAndKeys:
+                              [NSNumber numberWithFloat: 44100.0],                 AVSampleRateKey,
+                              [NSNumber numberWithInt: kAudioFormatAppleLossless], AVFormatIDKey,
+                              [NSNumber numberWithInt: 2],                         AVNumberOfChannelsKey,
+                              [NSNumber numberWithInt: AVAudioQualityMax],         AVEncoderAudioQualityKey,
+                              nil];
+
     session = [AVAudioSession sharedInstance];
     if (session == nil) {
         return @"no session available";
@@ -65,7 +76,7 @@
                 [error localizedDescription]];
     }
     
-    if (![session setCategory:AVAudioSessionCategoryPlayAndRecord error:&error]) {
+    if (![session setCategory:AVAudioSessionCategoryRecord error:&error]) {
         return [NSString stringWithFormat:@"setCategory: %@",
                 [error localizedDescription]];
     }
@@ -89,7 +100,7 @@
         return [NSString stringWithFormat:@"setPreferredIOBufferDuration: %@",
                 [error localizedDescription]];
     }
-    
+
 #ifdef notdef
     if (![session setCategory:AVAudioSessionCategorySoloAmbient
                   withOptions: AVAudioSessionCategoryOptionAllowBluetooth
@@ -128,47 +139,6 @@
 
 - (void) stopAudioCapture {
     [captureSession stopRunning];
-}
-
-// The microphone has delivered one or more buffers of sound.
-
-- (void)captureOutput:(AVCaptureOutput *)captureOutput
-didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
-       fromConnection:(AVCaptureConnection *)connection {
-    
-//    size_t sampleSize = CMSampleBufferGetSampleSize(sampleBuffer,0);
-//    size_t sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
-    
-    size_t sampleLength = CMSampleBufferGetTotalSampleSize(sampleBuffer);
-    CMBlockBufferRef blockbuff = CMSampleBufferGetDataBuffer(sampleBuffer);
-    
-    void *buffer = malloc(sampleLength);
-    assert(buffer);
-    
-    OSStatus stat;
-    stat = CMBlockBufferCopyDataBytes(blockbuff,
-                                      0,
-                                      sampleLength,
-                                      buffer);
-    if (stat != kCMBlockBufferNoErr) {
-        NSLog(@"sound block fetch error %d", (int)stat);
-        return;
-    }
-    NSData *rawData = [NSData dataWithBytesNoCopy:buffer
-                                           length:sampleLength
-                                     freeWhenDone:YES];
-    
-    // the first couple of blocks from the mike are all or nearly all zero.
-    // let it warm up a bit
-    
-    if (mikeBlockNumber++ < 5)
-        return;
-    
-    if (caller) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            [self.caller newAudioData:rawData];
-        });
-    }
 }
 
 @end
