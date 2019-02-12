@@ -1,5 +1,5 @@
 //
-//  WaveView.h
+//  WaveGraphView.h
 //  SciEx
 //
 //  Created by William Cheswick on 2/11/19.
@@ -8,11 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
+#import "XAxisView.h"
+#import "YAxisView.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface WaveView : UIView
+@interface WaveGraphView : UIView
 
-- (void) updateView;
+- (void) showSamples:(size_t) start count:(size_t)n;
 
 @end
 

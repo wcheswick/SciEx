@@ -51,10 +51,14 @@
 
 typedef short Sample;
 
+#define SAMPLES_TO_MS(s)    (1000.0*(((float)s)/(float)DEFAULT_SAMPLE_RATE))
+
+#define MAX_SAMPLES     (2000*DEFAULT_SAMPLE_RATE)  // more than half an hour, about 80MB
+
+#define SAMPLE_MEM_INCR (10*DEFAULT_SAMPLE_RATE) // more mem every ten seconds
+
 extern  Sample *samples;
 extern  size_t samples_alloc;
-extern  size_t samples_last;
-extern  size_t samples_start;
-
+extern  size_t samples_count;
 
 #endif /* AudioDefines_h */

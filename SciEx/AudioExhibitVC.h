@@ -17,8 +17,9 @@
 <AVCaptureAudioDataOutputSampleBufferDelegate>
 
 
-- (NSString *) startAudioCapture;
-- (void) stopAudioCapture;
+- (NSString *) setupMike;
+- (void) mikeOn;
+- (void) mikeOff;
 - (BOOL) mikeAvailable;
 
 @end

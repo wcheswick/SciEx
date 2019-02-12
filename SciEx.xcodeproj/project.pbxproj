@@ -44,7 +44,8 @@
 		FBA89A612210CB1D00CCE74B /* AudioExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A5F2210CB1D00CCE74B /* AudioExhibitVC.m */; };
 		FBA89A662211ACF500CCE74B /* XAxisView.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A622211ACF500CCE74B /* XAxisView.m */; };
 		FBA89A672211ACF500CCE74B /* YAxisView.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A632211ACF500CCE74B /* YAxisView.m */; };
-		FBA89A6B2211ADAA00CCE74B /* WaveView.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A6A2211ADAA00CCE74B /* WaveView.m */; };
+		FBA89A6B2211ADAA00CCE74B /* WaveGraphView.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A6A2211ADAA00CCE74B /* WaveGraphView.m */; };
+		FBA89A6F2212132F00CCE74B /* WaveView.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A6E2212132F00CCE74B /* WaveView.m */; };
 		FBC99806220C7C62002877C7 /* ChatVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FBC99805220C7C62002877C7 /* ChatVC.m */; };
 		FBD79454220B290300FC09D8 /* ishihara74.gif in Resources */ = {isa = PBXBuildFile; fileRef = FBD7944A220B290200FC09D8 /* ishihara74.gif */; };
 		FBD79455220B290300FC09D8 /* ishihara6.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FBD7944B220B290200FC09D8 /* ishihara6.jpeg */; };
@@ -126,9 +127,11 @@
 		FBA89A632211ACF500CCE74B /* YAxisView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YAxisView.m; sourceTree = "<group>"; };
 		FBA89A642211ACF500CCE74B /* YAxisView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YAxisView.h; sourceTree = "<group>"; };
 		FBA89A652211ACF500CCE74B /* XAxisView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XAxisView.h; sourceTree = "<group>"; };
-		FBA89A692211ADAA00CCE74B /* WaveView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WaveView.h; sourceTree = "<group>"; };
-		FBA89A6A2211ADAA00CCE74B /* WaveView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WaveView.m; sourceTree = "<group>"; };
+		FBA89A692211ADAA00CCE74B /* WaveGraphView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WaveGraphView.h; sourceTree = "<group>"; };
+		FBA89A6A2211ADAA00CCE74B /* WaveGraphView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WaveGraphView.m; sourceTree = "<group>"; };
 		FBA89A6C2211B42100CCE74B /* AudioDefines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioDefines.h; sourceTree = "<group>"; };
+		FBA89A6D2212132F00CCE74B /* WaveView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WaveView.h; sourceTree = "<group>"; };
+		FBA89A6E2212132F00CCE74B /* WaveView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WaveView.m; sourceTree = "<group>"; };
 		FBC99804220C7C62002877C7 /* ChatVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChatVC.h; sourceTree = "<group>"; };
 		FBC99805220C7C62002877C7 /* ChatVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChatVC.m; sourceTree = "<group>"; };
 		FBD79446220B266000FC09D8 /* Pixel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Pixel.h; sourceTree = "<group>"; };
@@ -215,8 +218,10 @@
 			isa = PBXGroup;
 			children = (
 				FBA89A6C2211B42100CCE74B /* AudioDefines.h */,
-				FBA89A692211ADAA00CCE74B /* WaveView.h */,
-				FBA89A6A2211ADAA00CCE74B /* WaveView.m */,
+				FBA89A6D2212132F00CCE74B /* WaveView.h */,
+				FBA89A6E2212132F00CCE74B /* WaveView.m */,
+				FBA89A692211ADAA00CCE74B /* WaveGraphView.h */,
+				FBA89A6A2211ADAA00CCE74B /* WaveGraphView.m */,
 				FBA89A652211ACF500CCE74B /* XAxisView.h */,
 				FBA89A622211ACF500CCE74B /* XAxisView.m */,
 				FBA89A642211ACF500CCE74B /* YAxisView.h */,
@@ -431,7 +436,7 @@
 				FBC99806220C7C62002877C7 /* ChatVC.m in Sources */,
 				FB52C9E12203444B00E99FF1 /* main.m in Sources */,
 				FBA89A662211ACF500CCE74B /* XAxisView.m in Sources */,
-				FBA89A6B2211ADAA00CCE74B /* WaveView.m in Sources */,
+				FBA89A6B2211ADAA00CCE74B /* WaveGraphView.m in Sources */,
 				FB52C9E92203476C00E99FF1 /* MainVC.m in Sources */,
 				FB52CA482203602000E99FF1 /* DDVC.m in Sources */,
 				FB52C9ED22034F7900E99FF1 /* SoundVC.m in Sources */,
@@ -442,6 +447,7 @@
 				FBA89A672211ACF500CCE74B /* YAxisView.m in Sources */,
 				FB52CA4E2203A7DE00E99FF1 /* VideoExhibitVC.m in Sources */,
 				FB52CA4222035F6D00E99FF1 /* ColorBlindVC.m in Sources */,
+				FBA89A6F2212132F00CCE74B /* WaveView.m in Sources */,
 				FB52CA4522035FA800E99FF1 /* LotteryVC.m in Sources */,
 				FB52CA512204C4E300E99FF1 /* PixelView.m in Sources */,
 			);

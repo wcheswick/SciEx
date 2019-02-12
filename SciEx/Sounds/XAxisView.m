@@ -7,6 +7,7 @@
 //
 
 #import "XAxisView.h"
+#import "Defines.h"
 #import "AudioDefines.h"
 
 @interface XAxisView ()
@@ -45,6 +46,9 @@
         widthLabel.textAlignment = NSTextAlignmentCenter;
         widthLabel.font = [UIFont systemFontOfSize:X_LABEL_H-LABEL_H_SLOP];
         [self addSubview:widthLabel];
+        
+        self.frame = CGRectMake(0, LATER,
+                                LATER, X_LABEL_H);
     }
     return self;
 }
@@ -64,15 +68,22 @@
     
     f.origin.y += 5;
     f.origin.x = 0;
-    f.size.width  = self.frame.size.width;
+    f.size.width = self.frame.size.width;
     widthLabel.frame = f;
     [widthLabel setNeedsDisplay];
     [self setNeedsDisplay];
 }
 
 - (NSString *) showMs: (float) ms {
-    if (ms >= 1000.0)
-        return [NSString stringWithFormat:@"%.3f s", ms/1000.0];
+    if (ms >= 1000.0) {
+        float seconds = ms/1000.0;
+        int minutes = seconds / 60;
+        if (minutes) {
+            return [NSString stringWithFormat:@"%d:%04.1f",
+                    minutes, seconds - 60*minutes];
+        } else
+            return [NSString stringWithFormat:@"%.1f", seconds];
+    }
     if (ms > 20.0)
         return [NSString stringWithFormat:@"%.0f ms", ms];
     if (ms == 0.)
@@ -83,15 +94,15 @@
 - (void) range: (float) left to:(float)right {
     self.leftValue = left;
     leftLabel.text = [self showMs:leftValue];
-    [leftLabel setNeedsDisplay];
+//    [leftLabel setNeedsDisplay];
     
     self.rightValue = right;
     rightLabel.text = [self showMs:rightValue];
-    [rightLabel setNeedsDisplay];
+//    [rightLabel setNeedsDisplay];
     
     float dt = right - left;
     widthLabel.text = [NSString stringWithFormat:@"width: %@", [self showMs:dt]];
-    [widthLabel setNeedsDisplay];
+//    [widthLabel setNeedsDisplay];
 }
 
 - (void)drawRect:(CGRect)rect { // force draylayer call

@@ -70,9 +70,6 @@
 
     waveView = [[WaveView alloc] init];
     waveView.backgroundColor = [UIColor yellowColor];
-    waveView.layer.borderColor = [UIColor blackColor].CGColor;
-    waveView.layer.borderWidth = 0.5;
-    waveView.layer.cornerRadius = 1.0;
     [self.view addSubview:waveView];
 
     FFTView = [[UIView alloc] init];
@@ -98,29 +95,31 @@
     waveView.frame = CGRectMake(INSET, sourceView.frame.origin.y - SEP - WAVE_H,
                                 self.view.frame.size.width - 2*INSET, WAVE_H);
     [waveView setNeedsLayout];
+    
+    NSString *err = [self setupMike];
+    if (err) {
+        mikeButton.selected = NO;
+        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Could not start microphone"
+                                                                       message:err
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Dismiss"
+                                                                style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction * action) {
+                                                                  ;
+                                                              }
+                                        ];
+        [alert addAction:defaultAction];
+        [self presentViewController:alert animated:YES completion:nil];
+    }
 }
 
 - (IBAction)doMike:(UIButton *)sender {
     mikeButton.selected = !mikeButton.selected;
     if (mikeButton.selected) {
-        NSString *err = [self startAudioCapture];
-        if (err) {
-            mikeButton.selected = NO;
-            UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Could not start microphone"
-                                                                           message:err
-                                                                    preferredStyle:UIAlertControllerStyleAlert];
-            
-            UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Dismiss"
-                                                                    style:UIAlertActionStyleDefault
-                                                                  handler:^(UIAlertAction * action) {
-                                                                      ;
-                                                                  }
-                                            ];
-            [alert addAction:defaultAction];
-            [self presentViewController:alert animated:YES completion:nil];
-        }
+        [self mikeOn];
     } else
-        [self stopAudioCapture];
+        [self mikeOff];
 }
 
 static u_long inputCount = 0;
@@ -130,16 +129,22 @@ static u_long inputCount = 0;
 - (void)captureOutput:(AVCaptureOutput *)captureOutput
 didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
        fromConnection:(AVCaptureConnection *)connection {
-
+    
     size_t sampleSize = CMSampleBufferGetSampleSize(sampleBuffer,0);
     assert(sampleSize == sizeof(Sample));
     size_t sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
     size_t sampleLength = CMSampleBufferGetTotalSampleSize(sampleBuffer);
     assert(sampleSize * sampleCount == sampleLength);
     
-    if (sampleLength > samples_alloc) {
-        samples_alloc = sampleLength;
-        samples = (Sample *)realloc(samples, samples_alloc);
+    if (samples_count + sampleCount > samples_alloc) {
+        if (samples_count + sampleCount == MAX_SAMPLES) {
+            NSLog(@"*** buffer full, now what?");
+            return;
+        }
+        samples_alloc += SAMPLE_MEM_INCR;
+        if (samples_alloc > MAX_SAMPLES)
+            samples_alloc = MAX_SAMPLES;
+        samples = (Sample *)realloc(samples, samples_alloc*sizeof(Sample));
         assert(samples);
     }
 
@@ -147,15 +152,17 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     OSStatus stat = CMBlockBufferCopyDataBytes(blockbuff,
                                       0,
                                       sampleLength,
-                                      samples);
+                                      &samples[samples_count]);
     if (stat != kCMBlockBufferNoErr) {
         NSLog(@"sound block fetch error %d", (int)stat);
         return;
     }
     inputCount += sampleCount;
-    
+    samples_count += sampleLength;
+    [waveView updateView];
+
     dispatch_async(dispatch_get_main_queue(), ^(void){
-        [self.waveView showSamples:0 count:sampleCount];
+        [self.waveView setNeedsLayout];
     });
 }
 
