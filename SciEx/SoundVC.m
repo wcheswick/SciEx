@@ -23,6 +23,7 @@
 
 @property (nonatomic, strong)   UITableView *sampleTableView;
 @property (nonatomic, strong)   UIView *controlsView;
+@property (nonatomic, strong)   UIToolbar *playControlBar;
 @property (nonatomic, strong)   UISegmentedControl *selectInput;
 @property (nonatomic, strong)   WaveView *waveView;
 @property (nonatomic, strong)   UIView *FFTView;
@@ -34,7 +35,7 @@
 @implementation SoundVC
 
 @synthesize sampleTableView;
-@synthesize controlsView, selectInput;
+@synthesize controlsView, selectInput, playControlBar;
 @synthesize waveView;
 @synthesize FFTView;
 @synthesize soundSampleSections;
@@ -114,6 +115,8 @@
 }
 
 #define SAMPLE_TABLE_H  150
+#define PLAY_CONTROL_H  50
+#define INPUT_SELECTOR_H    50
 #define CONTROLS_H  50
 #define WAVE_H    200
 
@@ -142,23 +145,69 @@
                                                             LATER, CONTROLS_H)];
     [self.view addSubview:controlsView];
     
+    playControlBar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0,
+                                                                 LATER, PLAY_CONTROL_H)];
+    [controlsView addSubview:playControlBar];
+    playControlBar.opaque = YES;
+    playControlBar.backgroundColor = [UIColor whiteColor];
+    
+//    playControlBar.opaque = YES;
+//    playControlBar.translucent = YES;
+    [self adjustPlayControlBar];
+
     UISegmentedControl *selectInput = [[UISegmentedControl alloc]
                                        initWithItems:@[@"Mike", @"Samples"]];
-    selectInput.frame = CGRectMake(0, 0, 150, controlsView.frame.size.height);
+    selectInput.frame = CGRectMake(0, BELOW(playControlBar.frame), 150, INPUT_SELECTOR_H);
     [selectInput addTarget:self
                          action:@selector(changeInput:)
                forControlEvents:UIControlEventValueChanged];
     selectInput.selectedSegmentIndex = MikeSegment;
     [controlsView addSubview:selectInput];
- 
+    SET_VIEW_HEIGHT(controlsView, BELOW(selectInput.frame));
+
     waveView = [[WaveView alloc] init];
     waveView.backgroundColor = [UIColor yellowColor];
     [self.view addSubview:waveView];
+
 
     FFTView = [[UIView alloc] init];
     [self.view addSubview:FFTView];
 
     self.view.backgroundColor = [UIColor whiteColor];
+}
+
+- (void) adjustPlayControlBar {
+    UIBarButtonItem *flexiableItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
+    
+    UIBarButtonItem *rewindButton = [[UIBarButtonItem alloc]
+                                    initWithBarButtonSystemItem:UIBarButtonSystemItemRewind
+                                    target:self action:@selector(doRewind:)];
+    rewindButton.enabled = NO;
+#ifdef notdef
+    UIBarButtonItem *redoButton = [[UIBarButtonItem alloc]
+                                   initWithBarButtonSystemItem:UIBarButtonSystemItemRedo
+                                   target:self action:@selector(doRedo:)];
+    redoButton.enabled = NO;
+#endif
+    
+    UIBarButtonItem *startStopButton;
+    if (mikeIsOn)
+        startStopButton = [[UIBarButtonItem alloc]
+                           initWithBarButtonSystemItem:UIBarButtonSystemItemPause
+                           target:self
+                           action:@selector(doStop:)];
+    else
+        startStopButton = [[UIBarButtonItem alloc]
+                           initWithBarButtonSystemItem:UIBarButtonSystemItemPlay
+                           target:self
+                           action:@selector(doStart:)];
+    
+    playControlBar.items = [NSArray arrayWithObjects:
+                               flexiableItem,
+                               rewindButton, flexiableItem,
+                               startStopButton, flexiableItem,
+                               nil];
+    [playControlBar setNeedsDisplay];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -177,14 +226,13 @@
     
     SET_VIEW_Y(controlsView, sampleTableView.frame.origin.y - controlsView.frame.size.height - SEP);
     SET_VIEW_WIDTH(controlsView, self.view.frame.size.width - 2*INSET);
-
+    SET_VIEW_WIDTH(playControlBar, controlsView.frame.size.width);
     waveView.frame = CGRectMake(INSET, controlsView.frame.origin.y - SEP - WAVE_H,
                                 self.view.frame.size.width - 2*INSET, WAVE_H);
     [waveView setNeedsLayout];
     
     [self changeInput:selectInput];
 }
-
 
 - (IBAction)changeInput:(UISegmentedControl *)sender {
     NSLog(@"selected input %ld", (long)sender.selectedSegmentIndex);
@@ -204,11 +252,11 @@
             [alert addAction:defaultAction];
             [self presentViewController:alert animated:YES completion:nil];
         } else {
-        sampleTableView.userInteractionEnabled = NO;
-            [self mikeOn];
+            sampleTableView.userInteractionEnabled = NO;
+            [self mikeOn: YES];
         }
     } else {
-        [self mikeOff];
+        [self mikeOn: NO];
         sampleTableView.userInteractionEnabled = YES;
     }
 }

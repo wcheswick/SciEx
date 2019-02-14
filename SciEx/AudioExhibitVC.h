@@ -14,12 +14,14 @@
 #import "AudioDefines.h"
 
 @interface AudioExhibitVC : ExhibitVC
-<AVCaptureAudioDataOutputSampleBufferDelegate>
+<AVCaptureAudioDataOutputSampleBufferDelegate> {
+    BOOL mikeIsOn;
+}
 
+@property (assign)              BOOL mikeIsOn;
 
 - (NSString *) setupMike;
-- (void) mikeOn;
-- (void) mikeOff;
+- (void) mikeOn:(BOOL) on;
 - (BOOL) mikeAvailable;
 
 @end

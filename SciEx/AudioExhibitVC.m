@@ -28,11 +28,13 @@ size_t samples_count = 0;   // sample count, not byte count
 @synthesize audioDevice, audioInput;
 @synthesize audioDataOutput;
 @synthesize sampleRate;
+@synthesize mikeIsOn;
 
 - (id)init {
     self = [super init];
     if (self) {
         sampleRate = DEFAULT_SAMPLE_RATE;
+        mikeIsOn = NO;
     }
     return self;
 }
@@ -85,12 +87,12 @@ size_t samples_count = 0;   // sample count, not byte count
     return nil;
 }
 
-- (void) mikeOn {
-    [captureSession startRunning];
-}
-
-- (void) mikeOff {
-    [captureSession stopRunning];
+- (void) mikeOn:(BOOL) on {
+    mikeIsOn = on;
+    if (on)
+        [captureSession startRunning];
+    else
+        [captureSession stopRunning];
 }
 
 @end
