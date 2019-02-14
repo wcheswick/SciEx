@@ -6,68 +6,151 @@
 //  Copyright © 2019 Cheswick.com. All rights reserved.
 //
 
+#import "OrderedDictionary.h"
 #import "SoundVC.h"
 #import "WaveView.h"
 #import "Defines.h"
 
+
+// keys used by dictionaries in soundSampleSections:
+
+#define kFileName   @"FileName"
+#define kDescription    @"Description"
+
+#define MikeSegment 0
+
 @interface SoundVC ()
 
-@property (nonatomic, strong)   UIView *sourceView;
+@property (nonatomic, strong)   UITableView *sampleTableView;
+@property (nonatomic, strong)   UIView *controlsView;
+@property (nonatomic, strong)   UISegmentedControl *selectInput;
 @property (nonatomic, strong)   WaveView *waveView;
 @property (nonatomic, strong)   UIView *FFTView;
 
-@property (nonatomic, strong)   UIButton *mikeButton;
+@property (nonatomic, strong)   OrderedDictionary *soundSampleSections;
 
 @end
 
 @implementation SoundVC
 
-@synthesize sourceView;
+@synthesize sampleTableView;
+@synthesize controlsView, selectInput;
 @synthesize waveView;
 @synthesize FFTView;
-@synthesize mikeButton;
+@synthesize soundSampleSections;
 
 - (id)init {
     self = [super init];
     if (self) {
         exhibitTitle = @"What does sound look like?";
         exhibitAvailable = YES;
+        soundSampleSections = [[OrderedDictionary alloc] init];
+        
+        [self readSoundList];
     }
     return self;
 }
+
+- (void) readSoundList {
+    NSString *soundIndexPath = [[NSBundle mainBundle]
+                                     pathForResource:@"index"ofType:@""];
+    if (!soundIndexPath) {
+        NSLog(@"*** Sound index file missing sequences missing");
+        return;
+    }
+    
+    NSError *error;
+    NSString *soundIndex = [NSString stringWithContentsOfFile:soundIndexPath
+                                                     encoding:NSUTF8StringEncoding
+                                                        error:&error];
+    if (!soundIndex || [soundIndex isEqualToString:@""] || error) {
+        NSLog(@"sound index list error: %@", [error localizedDescription]);
+        return;
+    }
+    
+    // Entries look like this:
+    
+    // #Section-name
+    // selection-name<whitespace>Description
+    
+    NSArray *lines = [soundIndex componentsSeparatedByString:@"\n"];
+    NSLog(@" number of sounds lines: %lu", (unsigned long)lines.count);
+
+    NSMutableArray *sectionEntries = nil;
+    
+    for (NSString *line in lines) {
+        if (line.length == 0 || [line isEqualToString:@""] )
+            continue;
+        if ([line hasPrefix:@"#"]) {    // new section
+            NSString *sectionName = [line substringFromIndex:1];
+//            NSLog(@"new section: %@", sectionName);
+            sectionEntries = [[NSMutableArray alloc] init];
+            [soundSampleSections addObject:sectionEntries withKey:sectionName];
+        } else {    // new sound in current section
+            NSRange tabIndex = [line rangeOfString:@"\t"];
+            if (tabIndex.location == NSNotFound) {
+                NSLog(@"malformed entry: '%@'", line);
+                continue;
+            }
+            NSString *fileName = [line substringToIndex:tabIndex.location];
+            NSString *samplePath = [[NSBundle mainBundle]
+                                        pathForResource:fileName ofType:@"wav"];
+            if (![[NSFileManager defaultManager] fileExistsAtPath:samplePath]) {
+                NSLog(@"sound sample file missing: '%@', skipped", fileName);
+                continue;
+            }
+
+//            NSLog(@"    file name: %@", fileName);
+            NSString *description = [[line substringFromIndex:tabIndex.location+1]
+                                      stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+//            NSLog(@"            description: %@", description);
+            NSDictionary *entryInfo = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                       fileName, kFileName,
+                                       description, kDescription,
+                                       nil];
+            [sectionEntries addObject:entryInfo];
+        }
+    }
+}
+
+#define SAMPLE_TABLE_H  150
+#define CONTROLS_H  50
+#define WAVE_H    200
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     self.navigationController.navigationBarHidden = NO;
-//    self.navigationController.navigationBar.opaque = YES;
     self.navigationController.toolbarHidden = YES;
-    
     
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                       target:self action:@selector(doDone:)];
     self.navigationItem.leftBarButtonItem = leftBarButton;
-
-    sourceView = [[UIView alloc]
-                  initWithFrame:CGRectMake(0, LATER, LATER, LATER)];
-    [self.view addSubview:sourceView];
     
-    mikeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    mikeButton.enabled = [self mikeAvailable];
-    mikeButton.frame = CGRectMake(0, 0, 100, BUTTON_H);
-    [mikeButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [mikeButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-    [mikeButton setTitle:@"Mike On" forState:UIControlStateNormal];
-    [mikeButton setTitle:@"Mike Off" forState:UIControlStateSelected];
-    mikeButton.titleLabel.font = [UIFont boldSystemFontOfSize: BUTTON_FONT_SIZE];
-    [mikeButton addTarget:self action:@selector(doMike:)
-     forControlEvents:UIControlEventTouchUpInside];
-    [sourceView addSubview:mikeButton];
-    SET_VIEW_HEIGHT(sourceView, BELOW(mikeButton.frame));
-    SET_VIEW_WIDTH(sourceView, RIGHT(mikeButton.frame));
-
+    sampleTableView = [[UITableView alloc]
+                  initWithFrame:CGRectMake(INSET, LATER, LATER, SAMPLE_TABLE_H)
+                  style:UITableViewStyleGrouped];
+    sampleTableView.delegate = self;
+    sampleTableView.dataSource = self;
+    sampleTableView.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:sampleTableView];
+    
+    controlsView = [[UIView alloc] initWithFrame:CGRectMake(INSET, LATER,
+                                                            LATER, CONTROLS_H)];
+    [self.view addSubview:controlsView];
+    
+    UISegmentedControl *selectInput = [[UISegmentedControl alloc]
+                                       initWithItems:@[@"Mike", @"Samples"]];
+    selectInput.frame = CGRectMake(0, 0, 150, controlsView.frame.size.height);
+    [selectInput addTarget:self
+                         action:@selector(changeInput:)
+               forControlEvents:UIControlEventValueChanged];
+    selectInput.selectedSegmentIndex = MikeSegment;
+    [controlsView addSubview:selectInput];
+ 
     waveView = [[WaveView alloc] init];
     waveView.backgroundColor = [UIColor yellowColor];
     [self.view addSubview:waveView];
@@ -88,45 +171,94 @@
     [self.navigationController setNavigationBarHidden:NO animated:YES];
     self.navigationController.navigationBar.opaque = YES;
     
-    SET_VIEW_Y(sourceView, self.view.frame.size.height - sourceView.frame.size.height);
-    [sourceView setNeedsDisplay];
+    SET_VIEW_Y(sampleTableView, self.view.frame.size.height - sampleTableView.frame.size.height);
+    SET_VIEW_WIDTH(sampleTableView, self.view.frame.size.width - 2*INSET);
+    [sampleTableView reloadData];
     
-#define WAVE_H    200
-    waveView.frame = CGRectMake(INSET, sourceView.frame.origin.y - SEP - WAVE_H,
+    SET_VIEW_Y(controlsView, sampleTableView.frame.origin.y - controlsView.frame.size.height - SEP);
+    SET_VIEW_WIDTH(controlsView, self.view.frame.size.width - 2*INSET);
+
+    waveView.frame = CGRectMake(INSET, controlsView.frame.origin.y - SEP - WAVE_H,
                                 self.view.frame.size.width - 2*INSET, WAVE_H);
     [waveView setNeedsLayout];
     
-    NSString *err = [self setupMike];
-    if (err) {
-        mikeButton.selected = NO;
-        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Could not start microphone"
-                                                                       message:err
-                                                                preferredStyle:UIAlertControllerStyleAlert];
-        
-        UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Dismiss"
-                                                                style:UIAlertActionStyleDefault
-                                                              handler:^(UIAlertAction * action) {
-                                                                  ;
-                                                              }
-                                        ];
-        [alert addAction:defaultAction];
-        [self presentViewController:alert animated:YES completion:nil];
+    [self changeInput:selectInput];
+}
+
+
+- (IBAction)changeInput:(UISegmentedControl *)sender {
+    NSLog(@"selected input %ld", (long)sender.selectedSegmentIndex);
+    if (sender.selectedSegmentIndex == MikeSegment) {
+        NSString *err = [self setupMike];
+        if (err) {
+            UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Could not start microphone"
+                                                                           message:err
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Dismiss"
+                                                                    style:UIAlertActionStyleDefault
+                                                                  handler:^(UIAlertAction * action) {
+                                                                      ;
+                                                                  }
+                                            ];
+            [alert addAction:defaultAction];
+            [self presentViewController:alert animated:YES completion:nil];
+        } else {
+        sampleTableView.userInteractionEnabled = NO;
+            [self mikeOn];
+        }
+    } else {
+        [self mikeOff];
+        sampleTableView.userInteractionEnabled = YES;
     }
 }
 
-- (IBAction)doMike:(UIButton *)sender {
-    mikeButton.selected = !mikeButton.selected;
-    if (mikeButton.selected) {
-        [self mikeOn];
-    } else
-        [self mikeOff];
+#pragma mark - Table view data source
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return soundSampleSections.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    NSArray *samplesList = [soundSampleSections objectAtIndex:section];
+    return samplesList.count;
+}
+
+- (NSString *)tableView:(UITableView *)tableView
+titleForHeaderInSection:(NSInteger)section {
+    NSString *key = [soundSampleSections keyAtIndex:section];
+    return key;
+}
+
+#define CellId  @"TVCellID"
+
+- (UITableViewCell *)tableView:(UITableView *)tableView
+         cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellId];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
+                                      reuseIdentifier:CellId];
+    }
+    NSArray *samplesList = [soundSampleSections objectAtIndex:indexPath.section];
+    NSDictionary *sample = [samplesList objectAtIndex:indexPath.row];
+    NSString *description = [sample objectForKey:kDescription];
+    cell.textLabel.text = description;
+    cell.indentationLevel = 5;
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView
+didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSArray *samplesList = [soundSampleSections objectAtIndex:indexPath.section];
+    NSDictionary *sample = [samplesList objectAtIndex:indexPath.row];
+    NSLog(@"selected sample file %@", [sample objectForKey:kFileName]);
 }
 
 static u_long inputCount = 0;
 
 // The microphone has delivered one or more buffers of sound.
 
-- (void)captureOutput:(AVCaptureOutput *)captureOutput
+- (void)captureOutput:(AVCaptureOutput *)output
 didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
        fromConnection:(AVCaptureConnection *)connection {
     
@@ -158,12 +290,8 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         return;
     }
     inputCount += sampleCount;
-    samples_count += sampleLength;
+    samples_count += sampleCount;
     [waveView updateView];
-
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        [self.waveView setNeedsLayout];
-    });
 }
 
 - (void) newAudioData: (NSData *)buffer {

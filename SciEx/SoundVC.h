@@ -12,7 +12,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SoundVC : AudioExhibitVC
+@interface SoundVC : AudioExhibitVC <
+    UITableViewDelegate,
+    UITableViewDataSource>
 
 @end
 

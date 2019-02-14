@@ -132,7 +132,6 @@ to_colorblind_raw(int r, int g, int b) {
     double              red, green, blue, redOld, greenOld;
     Pixel p;
     
-    
     /* Remove gamma to linearize RGB intensities */
     red   = pow (r/255.0,   1.0 / gammaRGB[0]);
     green = pow (g/255.0, 1.0 / gammaRGB[1]);

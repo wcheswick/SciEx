@@ -35,18 +35,25 @@ static NSString * const reuseIdentifier = @"Cell";
 
 @synthesize exhibitList;
 
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        exhibitList = [[NSArray alloc] initWithObjects:
+                       [[SoundVC alloc] init],
+                       [[ColorBlindVC alloc] init],
+                       [[LotteryVC alloc] init],
+                       [[DDVC alloc] init],
+                       [[ChatVC alloc] init],
+                       nil];
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     
     self.title = @"Science exhibits";
-    
-    exhibitList = [[NSArray alloc] initWithObjects:
-                   [[SoundVC alloc] init],
-                   [[ColorBlindVC alloc] init],
-                   [[LotteryVC alloc] init],
-                   [[DDVC alloc] init],
-                   [[ChatVC alloc] init],
-                   nil];
     
 //    self.navigationController.navigationBar.hidden = YES;
 //    self.navigationController.toolbarHidden = YES;

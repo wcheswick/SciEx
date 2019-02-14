@@ -269,23 +269,20 @@ static char *src_images[] = {
 
 - (void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-
+    
     UIActivityIndicatorView *busy = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
     busy.frame = CGRectMake(0, 0, cbImageView.frame.size.width, cbImageView.frame.size.height);
     busy.hidesWhenStopped = YES;
     busy.backgroundColor = [UIColor darkGrayColor];
-    [busy startAnimating];
     busy.backgroundColor = [UIColor whiteColor];
     [cbImageView addSubview:busy];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        init_colorblind(TRITANOPIA);
-        dispatch_async(dispatch_get_main_queue(), ^(void){
-            [busy stopAnimating];
-            self.cbView.backgroundColor = [UIColor whiteColor];
-            self.transformReady = YES;
-        });
-    });
+    [busy startAnimating];
+    init_colorblind(TRITANOPIA);
+    [busy stopAnimating];
+    
+    self.cbView.backgroundColor = [UIColor whiteColor];
+    self.transformReady = YES;
 }
 
 - (void) viewDidDisappear:(BOOL)animated {
@@ -295,6 +292,7 @@ static char *src_images[] = {
         NSLog(@"Freed");
         abgr = 0;
     }
+    NSLog(@"clearing colorblind table");
     end_colorblind();
 }
 

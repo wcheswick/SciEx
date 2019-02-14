@@ -9,8 +9,8 @@
 #import "AudioExhibitVC.h"
 
 Sample *samples = 0;
-size_t samples_alloc = 0;
-size_t samples_count = 0;
+size_t samples_alloc = 0;   // sample count, not byte count
+size_t samples_count = 0;   // sample count, not byte count
 
 @interface AudioExhibitVC ()
 
@@ -32,8 +32,6 @@ size_t samples_count = 0;
 - (id)init {
     self = [super init];
     if (self) {
-        if (![self mikeAvailable])
-            return nil;
         sampleRate = DEFAULT_SAMPLE_RATE;
     }
     return self;

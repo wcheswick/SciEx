@@ -13,14 +13,12 @@
 		FB52C9E12203444B00E99FF1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9E02203444B00E99FF1 /* main.m */; };
 		FB52C9E92203476C00E99FF1 /* MainVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9E82203476C00E99FF1 /* MainVC.m */; };
 		FB52C9ED22034F7900E99FF1 /* SoundVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52C9EC22034F7900E99FF1 /* SoundVC.m */; };
-		FB52CA03220358B700E99FF1 /* bbdove.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9EF220358B200E99FF1 /* bbdove.wav */; };
 		FB52CA04220358B700E99FF1 /* munich-chimes.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F0220358B200E99FF1 /* munich-chimes.wav */; };
 		FB52CA05220358B700E99FF1 /* vic-cricks2.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F1220358B200E99FF1 /* vic-cricks2.wav */; };
-		FB52CA06220358B700E99FF1 /* bbdove1.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F2220358B200E99FF1 /* bbdove1.wav */; };
+		FB52CA06220358B700E99FF1 /* bbdove.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F2220358B200E99FF1 /* bbdove.wav */; };
 		FB52CA07220358B700E99FF1 /* dandenongs1.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F3220358B300E99FF1 /* dandenongs1.wav */; };
 		FB52CA08220358B700E99FF1 /* bbrooster.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F4220358B300E99FF1 /* bbrooster.wav */; };
 		FB52CA09220358B700E99FF1 /* yearlinggulls.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F5220358B300E99FF1 /* yearlinggulls.wav */; };
-		FB52CA0A220358B700E99FF1 /* bbdove3.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F6220358B300E99FF1 /* bbdove3.wav */; };
 		FB52CA0B220358B700E99FF1 /* gull2.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F7220358B300E99FF1 /* gull2.wav */; };
 		FB52CA0C220358B700E99FF1 /* bville-bird.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F8220358B300E99FF1 /* bville-bird.wav */; };
 		FB52CA0D220358B700E99FF1 /* gull-cry-2.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9F9220358B300E99FF1 /* gull-cry-2.wav */; };
@@ -32,7 +30,6 @@
 		FB52CA13220358B700E99FF1 /* cabinnoise.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52C9FF220358B600E99FF1 /* cabinnoise.wav */; };
 		FB52CA14220358B700E99FF1 /* sin-880.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA00220358B700E99FF1 /* sin-880.wav */; };
 		FB52CA15220358B700E99FF1 /* sin-440.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA01220358B700E99FF1 /* sin-440.wav */; };
-		FB52CA16220358B700E99FF1 /* gull-cry.wav in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA02220358B700E99FF1 /* gull-cry.wav */; };
 		FB52CA3A22035AEC00E99FF1 /* pick6.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA3822035AEC00E99FF1 /* pick6.dat */; };
 		FB52CA3B22035AEC00E99FF1 /* pick6-2.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB52CA3922035AEC00E99FF1 /* pick6-2.dat */; };
 		FB52CA4222035F6D00E99FF1 /* ColorBlindVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4022035F6D00E99FF1 /* ColorBlindVC.m */; };
@@ -41,6 +38,8 @@
 		FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4A2203620300E99FF1 /* ExhibitVC.m */; };
 		FB52CA4E2203A7DE00E99FF1 /* VideoExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */; };
 		FB52CA512204C4E300E99FF1 /* PixelView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA502204C4E300E99FF1 /* PixelView.m */; };
+		FB943FB62214517F00DD3EC5 /* index in Resources */ = {isa = PBXBuildFile; fileRef = FB943FB52214517F00DD3EC5 /* index */; };
+		FB943FB92215F8B100DD3EC5 /* OrderedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = FB943FB82215F8B100DD3EC5 /* OrderedDictionary.m */; };
 		FBA89A612210CB1D00CCE74B /* AudioExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A5F2210CB1D00CCE74B /* AudioExhibitVC.m */; };
 		FBA89A662211ACF500CCE74B /* XAxisView.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A622211ACF500CCE74B /* XAxisView.m */; };
 		FBA89A672211ACF500CCE74B /* YAxisView.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A632211ACF500CCE74B /* YAxisView.m */; };
@@ -73,14 +72,12 @@
 		FB52C9EA2203484C00E99FF1 /* Defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Defines.h; sourceTree = "<group>"; };
 		FB52C9EB22034F7900E99FF1 /* SoundVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoundVC.h; sourceTree = "<group>"; };
 		FB52C9EC22034F7900E99FF1 /* SoundVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SoundVC.m; sourceTree = "<group>"; };
-		FB52C9EF220358B200E99FF1 /* bbdove.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bbdove.wav; sourceTree = "<group>"; };
 		FB52C9F0220358B200E99FF1 /* munich-chimes.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "munich-chimes.wav"; sourceTree = "<group>"; };
 		FB52C9F1220358B200E99FF1 /* vic-cricks2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "vic-cricks2.wav"; sourceTree = "<group>"; };
-		FB52C9F2220358B200E99FF1 /* bbdove1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bbdove1.wav; sourceTree = "<group>"; };
+		FB52C9F2220358B200E99FF1 /* bbdove.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bbdove.wav; sourceTree = "<group>"; };
 		FB52C9F3220358B300E99FF1 /* dandenongs1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = dandenongs1.wav; sourceTree = "<group>"; };
 		FB52C9F4220358B300E99FF1 /* bbrooster.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bbrooster.wav; sourceTree = "<group>"; };
 		FB52C9F5220358B300E99FF1 /* yearlinggulls.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = yearlinggulls.wav; sourceTree = "<group>"; };
-		FB52C9F6220358B300E99FF1 /* bbdove3.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bbdove3.wav; sourceTree = "<group>"; };
 		FB52C9F7220358B300E99FF1 /* gull2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = gull2.wav; sourceTree = "<group>"; };
 		FB52C9F8220358B300E99FF1 /* bville-bird.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "bville-bird.wav"; sourceTree = "<group>"; };
 		FB52C9F9220358B300E99FF1 /* gull-cry-2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "gull-cry-2.wav"; sourceTree = "<group>"; };
@@ -92,7 +89,6 @@
 		FB52C9FF220358B600E99FF1 /* cabinnoise.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = cabinnoise.wav; sourceTree = "<group>"; };
 		FB52CA00220358B700E99FF1 /* sin-880.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "sin-880.wav"; sourceTree = "<group>"; };
 		FB52CA01220358B700E99FF1 /* sin-440.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "sin-440.wav"; sourceTree = "<group>"; };
-		FB52CA02220358B700E99FF1 /* gull-cry.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "gull-cry.wav"; sourceTree = "<group>"; };
 		FB52CA18220358EB00E99FF1 /* gull2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = gull2.wav; sourceTree = "<group>"; };
 		FB52CA19220358EB00E99FF1 /* gulls.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = gulls.wav; sourceTree = "<group>"; };
 		FB52CA1A220358EB00E99FF1 /* birds1.mpeg */ = {isa = PBXFileReference; lastKnownFileType = video.mpeg; path = birds1.mpeg; sourceTree = "<group>"; };
@@ -121,6 +117,9 @@
 		FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoExhibitVC.m; sourceTree = "<group>"; };
 		FB52CA4F2204C4E300E99FF1 /* PixelView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PixelView.h; sourceTree = "<group>"; };
 		FB52CA502204C4E300E99FF1 /* PixelView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PixelView.m; sourceTree = "<group>"; };
+		FB943FB52214517F00DD3EC5 /* index */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = index; sourceTree = "<group>"; };
+		FB943FB72215F8B100DD3EC5 /* OrderedDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OrderedDictionary.h; sourceTree = "<group>"; };
+		FB943FB82215F8B100DD3EC5 /* OrderedDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OrderedDictionary.m; sourceTree = "<group>"; };
 		FBA89A5F2210CB1D00CCE74B /* AudioExhibitVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioExhibitVC.m; sourceTree = "<group>"; };
 		FBA89A602210CB1D00CCE74B /* AudioExhibitVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioExhibitVC.h; sourceTree = "<group>"; };
 		FBA89A622211ACF500CCE74B /* XAxisView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XAxisView.m; sourceTree = "<group>"; };
@@ -187,16 +186,16 @@
 				FB52C9E82203476C00E99FF1 /* MainVC.m */,
 				FB52CA492203620300E99FF1 /* ExhibitVC.h */,
 				FB52CA4A2203620300E99FF1 /* ExhibitVC.m */,
-				FB52CA4C2203A7DE00E99FF1 /* VideoExhibitVC.h */,
-				FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */,
 				FBA89A602210CB1D00CCE74B /* AudioExhibitVC.h */,
 				FBA89A5F2210CB1D00CCE74B /* AudioExhibitVC.m */,
 				FB52C9EB22034F7900E99FF1 /* SoundVC.h */,
 				FB52C9EC22034F7900E99FF1 /* SoundVC.m */,
+				FB52C9EE2203588600E99FF1 /* Sound */,
+				FB52CA4C2203A7DE00E99FF1 /* VideoExhibitVC.h */,
+				FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */,
 				FB52CA4122035F6D00E99FF1 /* ColorBlindVC.h */,
 				FB52CA4022035F6D00E99FF1 /* ColorBlindVC.m */,
 				FBD79447220B27EE00FC09D8 /* CB */,
-				FB52C9EE2203588600E99FF1 /* Sounds */,
 				FB52CA4422035FA700E99FF1 /* LotteryVC.h */,
 				FB52CA4322035FA700E99FF1 /* LotteryVC.m */,
 				FB52CA472203602000E99FF1 /* DDVC.h */,
@@ -205,6 +204,8 @@
 				FBC99805220C7C62002877C7 /* ChatVC.m */,
 				FB52CA4F2204C4E300E99FF1 /* PixelView.h */,
 				FB52CA502204C4E300E99FF1 /* PixelView.m */,
+				FB943FB72215F8B100DD3EC5 /* OrderedDictionary.h */,
+				FB943FB82215F8B100DD3EC5 /* OrderedDictionary.m */,
 				FB52CA3722035ADB00E99FF1 /* Lottery */,
 				FB52C9DA2203444B00E99FF1 /* Assets.xcassets */,
 				FB52C9DC2203444B00E99FF1 /* LaunchScreen.storyboard */,
@@ -214,7 +215,7 @@
 			path = SciEx;
 			sourceTree = "<group>";
 		};
-		FB52C9EE2203588600E99FF1 /* Sounds */ = {
+		FB52C9EE2203588600E99FF1 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
 				FBA89A6C2211B42100CCE74B /* AudioDefines.h */,
@@ -229,7 +230,7 @@
 				FBA89A682211AD6200CCE74B /* Samples */,
 				FB52CA17220358CE00E99FF1 /* src */,
 			);
-			path = Sounds;
+			path = Sound;
 			sourceTree = "<group>";
 		};
 		FB52CA17220358CE00E99FF1 /* src */ = {
@@ -278,29 +279,59 @@
 			path = src;
 			sourceTree = "<group>";
 		};
-		FBA89A682211AD6200CCE74B /* Samples */ = {
+		FB943FB12214469000DD3EC5 /* Birds */ = {
 			isa = PBXGroup;
 			children = (
-				FB52C9EF220358B200E99FF1 /* bbdove.wav */,
-				FB52C9F2220358B200E99FF1 /* bbdove1.wav */,
-				FB52C9F6220358B300E99FF1 /* bbdove3.wav */,
+				FB52C9F2220358B200E99FF1 /* bbdove.wav */,
 				FB52C9F4220358B300E99FF1 /* bbrooster.wav */,
 				FB52C9F8220358B300E99FF1 /* bville-bird.wav */,
-				FB52C9FF220358B600E99FF1 /* cabinnoise.wav */,
-				FB52C9F3220358B300E99FF1 /* dandenongs1.wav */,
 				FB52C9F9220358B300E99FF1 /* gull-cry-2.wav */,
-				FB52CA02220358B700E99FF1 /* gull-cry.wav */,
 				FB52C9F7220358B300E99FF1 /* gull2.wav */,
 				FB52C9FA220358B300E99FF1 /* gulls.wav */,
-				FB52C9F0220358B200E99FF1 /* munich-chimes.wav */,
-				FB52C9FB220358B600E99FF1 /* munich-crowd.wav */,
-				FB52C9FC220358B600E99FF1 /* munich-glock.wav */,
-				FB52CA01220358B700E99FF1 /* sin-440.wav */,
-				FB52CA00220358B700E99FF1 /* sin-880.wav */,
+				FB52C9F5220358B300E99FF1 /* yearlinggulls.wav */,
+			);
+			path = Birds;
+			sourceTree = "<group>";
+		};
+		FB943FB2221446C100DD3EC5 /* Other creatures */ = {
+			isa = PBXGroup;
+			children = (
 				FB52C9FD220358B600E99FF1 /* treefrogs3.wav */,
 				FB52C9FE220358B600E99FF1 /* vic-cricks.wav */,
 				FB52C9F1220358B200E99FF1 /* vic-cricks2.wav */,
-				FB52C9F5220358B300E99FF1 /* yearlinggulls.wav */,
+			);
+			path = "Other creatures";
+			sourceTree = "<group>";
+		};
+		FB943FB3221446F700DD3EC5 /* Etc */ = {
+			isa = PBXGroup;
+			children = (
+				FB52C9FF220358B600E99FF1 /* cabinnoise.wav */,
+				FB52C9F3220358B300E99FF1 /* dandenongs1.wav */,
+				FB52C9F0220358B200E99FF1 /* munich-chimes.wav */,
+				FB52C9FB220358B600E99FF1 /* munich-crowd.wav */,
+				FB52C9FC220358B600E99FF1 /* munich-glock.wav */,
+			);
+			path = Etc;
+			sourceTree = "<group>";
+		};
+		FB943FB42214471300DD3EC5 /* Technical */ = {
+			isa = PBXGroup;
+			children = (
+				FB52CA01220358B700E99FF1 /* sin-440.wav */,
+				FB52CA00220358B700E99FF1 /* sin-880.wav */,
+			);
+			path = Technical;
+			sourceTree = "<group>";
+		};
+		FBA89A682211AD6200CCE74B /* Samples */ = {
+			isa = PBXGroup;
+			children = (
+				FB943FB52214517F00DD3EC5 /* index */,
+				FB943FB12214469000DD3EC5 /* Birds */,
+				FB943FB2221446C100DD3EC5 /* Other creatures */,
+				FB943FB3221446F700DD3EC5 /* Etc */,
+				FB943FB42214471300DD3EC5 /* Technical */,
 			);
 			path = Samples;
 			sourceTree = "<group>";
@@ -395,7 +426,6 @@
 				FB52CA3B22035AEC00E99FF1 /* pick6-2.dat in Resources */,
 				FBD7945A220B290300FC09D8 /* ishihara29.jpeg in Resources */,
 				FBD7945B220B290300FC09D8 /* ishihara25.jpeg in Resources */,
-				FB52CA0A220358B700E99FF1 /* bbdove3.wav in Resources */,
 				FB52CA12220358B700E99FF1 /* vic-cricks.wav in Resources */,
 				FB52CA0E220358B700E99FF1 /* gulls.wav in Resources */,
 				FB52CA13220358B700E99FF1 /* cabinnoise.wav in Resources */,
@@ -405,13 +435,11 @@
 				FB52CA14220358B700E99FF1 /* sin-880.wav in Resources */,
 				FBD79458220B290300FC09D8 /* ishihara56.jpeg in Resources */,
 				FB52CA0C220358B700E99FF1 /* bville-bird.wav in Resources */,
-				FB52CA06220358B700E99FF1 /* bbdove1.wav in Resources */,
+				FB52CA06220358B700E99FF1 /* bbdove.wav in Resources */,
 				FB52CA3A22035AEC00E99FF1 /* pick6.dat in Resources */,
 				FBD79454220B290300FC09D8 /* ishihara74.gif in Resources */,
 				FBD79455220B290300FC09D8 /* ishihara6.jpeg in Resources */,
-				FB52CA16220358B700E99FF1 /* gull-cry.wav in Resources */,
 				FB52CA15220358B700E99FF1 /* sin-440.wav in Resources */,
-				FB52CA03220358B700E99FF1 /* bbdove.wav in Resources */,
 				FB52CA07220358B700E99FF1 /* dandenongs1.wav in Resources */,
 				FBD79457220B290300FC09D8 /* cb.png in Resources */,
 				FB52CA08220358B700E99FF1 /* bbrooster.wav in Resources */,
@@ -421,6 +449,7 @@
 				FB52CA0D220358B700E99FF1 /* gull-cry-2.wav in Resources */,
 				FB52CA10220358B700E99FF1 /* munich-glock.wav in Resources */,
 				FB52CA11220358B700E99FF1 /* treefrogs3.wav in Resources */,
+				FB943FB62214517F00DD3EC5 /* index in Resources */,
 				FB52CA04220358B700E99FF1 /* munich-chimes.wav in Resources */,
 				FB52CA05220358B700E99FF1 /* vic-cricks2.wav in Resources */,
 			);
@@ -442,6 +471,7 @@
 				FB52C9ED22034F7900E99FF1 /* SoundVC.m in Sources */,
 				FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */,
 				FBA89A612210CB1D00CCE74B /* AudioExhibitVC.m in Sources */,
+				FB943FB92215F8B100DD3EC5 /* OrderedDictionary.m in Sources */,
 				FBD7946C220B2B3000FC09D8 /* cb.c in Sources */,
 				FB52C9CD2203444A00E99FF1 /* AppDelegate.m in Sources */,
 				FBA89A672211ACF500CCE74B /* YAxisView.m in Sources */,
