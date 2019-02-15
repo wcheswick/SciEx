@@ -23,6 +23,7 @@
 
 @property (nonatomic, strong)   UITableView *sampleTableView;
 @property (nonatomic, strong)   UIView *controlsView;
+@property (nonatomic, strong)   UIButton *mikeButton;
 @property (nonatomic, strong)   UIToolbar *playControlBar;
 @property (nonatomic, strong)   UISegmentedControl *selectInput;
 @property (nonatomic, strong)   WaveView *waveView;
@@ -36,6 +37,7 @@
 
 @synthesize sampleTableView;
 @synthesize controlsView, selectInput, playControlBar;
+@synthesize mikeButton;
 @synthesize waveView;
 @synthesize FFTView;
 @synthesize soundSampleSections;
@@ -117,6 +119,7 @@
 #define SAMPLE_TABLE_H  150
 #define PLAY_CONTROL_H  50
 #define INPUT_SELECTOR_H    50
+#define MIKE_BUTTON_W   100
 #define CONTROLS_H  50
 #define WAVE_H    200
 
@@ -163,6 +166,20 @@
                forControlEvents:UIControlEventValueChanged];
     selectInput.selectedSegmentIndex = MikeSegment;
     [controlsView addSubview:selectInput];
+    
+    mikeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    mikeButton.enabled = [self mikeAvailable];
+    mikeButton.frame = CGRectMake(RIGHT(selectInput.frame) + 3*SEP, selectInput.frame.origin.y,
+                                  MIKE_BUTTON_W, selectInput.frame.size.height);
+    [mikeButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [mikeButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+    [mikeButton setTitle:@"Mike On" forState:UIControlStateNormal];
+    [mikeButton setTitle:@"Mike Off" forState:UIControlStateSelected];
+    mikeButton.titleLabel.font = [UIFont boldSystemFontOfSize: BUTTON_FONT_SIZE];
+    [mikeButton addTarget:self action:@selector(doMike:)
+         forControlEvents:UIControlEventTouchUpInside];
+    [controlsView addSubview:mikeButton];
+    
     SET_VIEW_HEIGHT(controlsView, BELOW(selectInput.frame));
 
     waveView = [[WaveView alloc] init];
@@ -227,7 +244,7 @@
     SET_VIEW_Y(controlsView, sampleTableView.frame.origin.y - controlsView.frame.size.height - SEP);
     SET_VIEW_WIDTH(controlsView, self.view.frame.size.width - 2*INSET);
     SET_VIEW_WIDTH(playControlBar, controlsView.frame.size.width);
-    waveView.frame = CGRectMake(INSET, controlsView.frame.origin.y - SEP - WAVE_H,
+    waveView.frame = CGRectMake(INSET, controlsView.frame.origin.y - WAVE_H,
                                 self.view.frame.size.width - 2*INSET, WAVE_H);
     [waveView setNeedsLayout];
     
@@ -253,12 +270,22 @@
             [self presentViewController:alert animated:YES completion:nil];
         } else {
             sampleTableView.userInteractionEnabled = NO;
-            [self mikeOn: YES];
+            mikeButton.enabled = YES;
         }
     } else {
         [self mikeOn: NO];
+        mikeButton.enabled = NO;
         sampleTableView.userInteractionEnabled = YES;
     }
+}
+
+
+- (IBAction)doMike:(UIButton *)sender {
+    mikeButton.selected = !mikeButton.selected;
+    if (mikeButton.selected) {
+        [self mikeOn:YES];
+    } else
+        [self mikeOn:NO];
 }
 
 #pragma mark - Table view data source
