@@ -6,11 +6,11 @@
 //  Copyright © 2019 Cheswick.com. All rights reserved.
 //
 
+#import "Defines.h"
 #import "OrderedDictionary.h"
 #import "SoundVC.h"
 #import "WaveView.h"
-#import "Defines.h"
-
+#import "XAxisView.h"
 
 // keys used by dictionaries in soundSampleSections:
 
@@ -21,26 +21,33 @@
 
 @interface SoundVC ()
 
+@property (nonatomic, strong)   UIView *containerView;
 @property (nonatomic, strong)   UITableView *sampleTableView;
 @property (nonatomic, strong)   UIView *controlsView;
 @property (nonatomic, strong)   UIButton *mikeButton;
 @property (nonatomic, strong)   UIToolbar *playControlBar;
 @property (nonatomic, strong)   UISegmentedControl *selectInput;
-@property (nonatomic, strong)   WaveView *waveView;
 @property (nonatomic, strong)   UIView *FFTView;
+@property (nonatomic, strong)   WaveView *waveView;
+@property (nonatomic, strong)   XAxisView *xAxisView;
 
 @property (nonatomic, strong)   OrderedDictionary *soundSampleSections;
+@property (assign)              BOOL AGC;
 
 @end
 
 @implementation SoundVC
 
+@synthesize containerView;
 @synthesize sampleTableView;
 @synthesize controlsView, selectInput, playControlBar;
 @synthesize mikeButton;
-@synthesize waveView;
 @synthesize FFTView;
+@synthesize waveView;
+@synthesize xAxisView;
+
 @synthesize soundSampleSections;
+@synthesize AGC;
 
 - (id)init {
     self = [super init];
@@ -48,6 +55,7 @@
         exhibitTitle = @"What does sound look like?";
         exhibitAvailable = YES;
         soundSampleSections = [[OrderedDictionary alloc] init];
+        AGC = NO;
         
         [self readSoundList];
     }
@@ -116,12 +124,16 @@
     }
 }
 
-#define SAMPLE_TABLE_H  150
 #define PLAY_CONTROL_H  50
-#define INPUT_SELECTOR_H    50
 #define MIKE_BUTTON_W   100
 #define CONTROLS_H  50
 #define WAVE_H    200
+#define FFT_H   WAVE_H
+#define INPUT_SELECTOR_W  150
+#define INPUT_SELECTOR_H    50
+#define SAMPLE_TABLE_H  150
+
+#define X_AXIS_H    20
 
 
 - (void)viewDidLoad {
@@ -136,37 +148,52 @@
                                       target:self action:@selector(doDone:)];
     self.navigationItem.leftBarButtonItem = leftBarButton;
     
-    sampleTableView = [[UITableView alloc]
-                  initWithFrame:CGRectMake(INSET, LATER, LATER, SAMPLE_TABLE_H)
-                  style:UITableViewStyleGrouped];
-    sampleTableView.delegate = self;
-    sampleTableView.dataSource = self;
-    sampleTableView.backgroundColor = [UIColor whiteColor];
-    [self.view addSubview:sampleTableView];
+    containerView = [[UIView alloc] init];
+    containerView.backgroundColor = [UIColor whiteColor];
     
-    controlsView = [[UIView alloc] initWithFrame:CGRectMake(INSET, LATER,
-                                                            LATER, CONTROLS_H)];
-    [self.view addSubview:controlsView];
+    FFTView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, LATER, FFT_H)];
+    FFTView.layer.borderWidth = 1;
+    FFTView.layer.borderColor = [UIColor redColor].CGColor;
+    [containerView addSubview:FFTView];
+
+    waveView = [[WaveView alloc] initWithFrame:CGRectMake(0, BELOW(FFTView.frame) + SEP,
+                                                          LATER, WAVE_H)];
+    waveView.layer.borderWidth = 1;
+    waveView.layer.borderColor = [UIColor orangeColor].CGColor;
+    [containerView addSubview:waveView];
+
+    xAxisView = [[XAxisView alloc]
+                 initWithFrame:CGRectMake(0, BELOW(waveView.frame),
+                                          LATER, X_AXIS_H)];
+    xAxisView.layer.borderWidth = 1;
+    xAxisView.layer.borderColor = [UIColor yellowColor].CGColor;
+    [containerView addSubview:xAxisView];
     
-    playControlBar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0,
+    controlsView = [[UIView alloc]
+                    initWithFrame:CGRectMake(0, BELOW(xAxisView.frame),
+                                             LATER, CONTROLS_H)];
+    controlsView.layer.borderWidth = 1;
+    controlsView.layer.borderColor = [UIColor greenColor].CGColor;
+    controlsView = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0,
                                                                  LATER, PLAY_CONTROL_H)];
-    [controlsView addSubview:playControlBar];
     playControlBar.opaque = YES;
     playControlBar.backgroundColor = [UIColor whiteColor];
+    //    playControlBar.opaque = YES;
+    //    playControlBar.translucent = YES;
+    playControlBar.backgroundColor = [UIColor purpleColor];
+    [controlsView addSubview:playControlBar];
     
-//    playControlBar.opaque = YES;
-//    playControlBar.translucent = YES;
     [self adjustPlayControlBar];
-
+    
     UISegmentedControl *selectInput = [[UISegmentedControl alloc]
                                        initWithItems:@[@"Mike", @"Samples"]];
-    selectInput.frame = CGRectMake(0, BELOW(playControlBar.frame), 150, INPUT_SELECTOR_H);
+    selectInput.frame = CGRectMake(0, BELOW(playControlBar.frame) + SEP, INPUT_SELECTOR_W, INPUT_SELECTOR_H);
     [selectInput addTarget:self
-                         action:@selector(changeInput:)
-               forControlEvents:UIControlEventValueChanged];
+                    action:@selector(changeInput:)
+          forControlEvents:UIControlEventValueChanged];
     selectInput.selectedSegmentIndex = MikeSegment;
     [controlsView addSubview:selectInput];
-    
+
     mikeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     mikeButton.enabled = [self mikeAvailable];
     mikeButton.frame = CGRectMake(RIGHT(selectInput.frame) + 3*SEP, selectInput.frame.origin.y,
@@ -181,31 +208,50 @@
     [controlsView addSubview:mikeButton];
     
     SET_VIEW_HEIGHT(controlsView, BELOW(selectInput.frame));
+    controlsView.backgroundColor = [UIColor greenColor];
+    [containerView addSubview:controlsView];
 
-    waveView = [[WaveView alloc] init];
-    waveView.backgroundColor = [UIColor yellowColor];
-    [self.view addSubview:waveView];
+    sampleTableView = [[UITableView alloc]
+                  initWithFrame:CGRectMake(0, BELOW(controlsView.frame), LATER, SAMPLE_TABLE_H)
+                  style:UITableViewStyleGrouped];
+    sampleTableView.delegate = self;
+    sampleTableView.dataSource = self;
+    sampleTableView.backgroundColor = [UIColor whiteColor];
+    sampleTableView.layer.borderWidth = 1;
+    sampleTableView.layer.borderColor = [UIColor greenColor].CGColor;
+//    [containerView addSubview:sampleTableView];
 
-
-    FFTView = [[UIView alloc] init];
-    [self.view addSubview:FFTView];
-
+    [self.view addSubview:containerView];
     self.view.backgroundColor = [UIColor whiteColor];
 }
 
 - (void) adjustPlayControlBar {
     UIBarButtonItem *flexiableItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
     
+    UIButton *AGCButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    AGCButton.enabled = NO;
+    mikeButton.frame = CGRectMake(RIGHT(selectInput.frame) + 3*SEP, selectInput.frame.origin.y,
+                                  MIKE_BUTTON_W, selectInput.frame.size.height);
+    [AGCButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [AGCButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+    [AGCButton setTitle:@"AGC on " forState:UIControlStateNormal];
+    [AGCButton setTitle:@"AGC off" forState:UIControlStateSelected];
+    AGCButton.titleLabel.font = [UIFont boldSystemFontOfSize: BUTTON_FONT_SIZE];
+    [AGCButton addTarget:self action:@selector(doAGC:)
+         forControlEvents:UIControlEventTouchUpInside];
+    
+    UIBarButtonItem *AGCBarButton = [[UIBarButtonItem alloc]
+                                  initWithCustomView:AGCButton];
+
+#ifdef notdef
     UIBarButtonItem *rewindButton = [[UIBarButtonItem alloc]
                                     initWithBarButtonSystemItem:UIBarButtonSystemItemRewind
                                     target:self action:@selector(doRewind:)];
     rewindButton.enabled = NO;
-#ifdef notdef
     UIBarButtonItem *redoButton = [[UIBarButtonItem alloc]
                                    initWithBarButtonSystemItem:UIBarButtonSystemItemRedo
                                    target:self action:@selector(doRedo:)];
     redoButton.enabled = NO;
-#endif
     
     UIBarButtonItem *startStopButton;
     if (mikeIsOn)
@@ -218,11 +264,13 @@
                            initWithBarButtonSystemItem:UIBarButtonSystemItemPlay
                            target:self
                            action:@selector(doStart:)];
-    
+#endif
+
     playControlBar.items = [NSArray arrayWithObjects:
                                flexiableItem,
-                               rewindButton, flexiableItem,
-                               startStopButton, flexiableItem,
+                            AGCBarButton, flexiableItem,
+ //                              rewindButton, flexiableItem,
+ //                              startStopButton, flexiableItem,
                                nil];
     [playControlBar setNeedsDisplay];
 }
@@ -230,24 +278,24 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    SET_VIEW_Y(self.view, BELOW(self.navigationController.navigationBar.frame));
-    SET_VIEW_HEIGHT(self.view, self.view.frame.size.height - self.view.frame.origin.y);
+    containerView.frame = self.view.frame;
+    SET_VIEW_Y(containerView, BELOW(self.navigationController.navigationBar.frame));
+    SET_VIEW_HEIGHT(containerView, containerView.frame.size.height - containerView.frame.origin.y);
+    containerView.frame = CGRectInset(containerView.frame, INSET, INSET);
     
     [self.navigationController setNavigationBarHidden:YES animated:YES];
     [self.navigationController setNavigationBarHidden:NO animated:YES];
     self.navigationController.navigationBar.opaque = YES;
     
-    SET_VIEW_Y(sampleTableView, self.view.frame.size.height - sampleTableView.frame.size.height);
-    SET_VIEW_WIDTH(sampleTableView, self.view.frame.size.width - 2*INSET);
+    SET_VIEW_WIDTH(FFTView, containerView.frame.size.width);
+    SET_VIEW_WIDTH(waveView, containerView.frame.size.width);
+    SET_VIEW_WIDTH(xAxisView, containerView.frame.size.width);
+    SET_VIEW_WIDTH(playControlBar, containerView.frame.size.width);
+    SET_VIEW_WIDTH(controlsView, containerView.frame.size.width);
+    SET_VIEW_WIDTH(sampleTableView, containerView.frame.size.width);
     [sampleTableView reloadData];
     
-    SET_VIEW_Y(controlsView, sampleTableView.frame.origin.y - controlsView.frame.size.height - SEP);
-    SET_VIEW_WIDTH(controlsView, self.view.frame.size.width - 2*INSET);
-    SET_VIEW_WIDTH(playControlBar, controlsView.frame.size.width);
-    waveView.frame = CGRectMake(INSET, controlsView.frame.origin.y - WAVE_H,
-                                self.view.frame.size.width - 2*INSET, WAVE_H);
     [waveView setNeedsLayout];
-    
     [self changeInput:selectInput];
 }
 
@@ -279,6 +327,11 @@
     }
 }
 
+
+- (IBAction)doAGC:(UIButton *)b {
+    AGC = b.selected = !b.selected;
+    NSLog(@"AGC is now %@", AGC ? @"ON" : @"OFF");
+}
 
 - (IBAction)doMike:(UIButton *)sender {
     mikeButton.selected = !mikeButton.selected;

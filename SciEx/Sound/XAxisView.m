@@ -29,26 +29,23 @@
 @synthesize leftValue;
 @synthesize rightValue;
 
-- (id)init {
-    self = [super init];
+- (id)initWithFrame:(CGRect) f {
+    self = [super initWithFrame:f];
     if (self) {
         leftLabel = [[UILabel alloc] init];
         leftLabel.textAlignment = NSTextAlignmentLeft;
-        leftLabel.font = [UIFont systemFontOfSize:X_LABEL_H-LABEL_H_SLOP];
+        leftLabel.font = [UIFont systemFontOfSize:f.size.height-LABEL_H_SLOP];
         [self addSubview:leftLabel];
         
         rightLabel = [[UILabel alloc] init];
         rightLabel.textAlignment = NSTextAlignmentRight;
-        rightLabel.font = [UIFont systemFontOfSize:X_LABEL_H-LABEL_H_SLOP];
+        rightLabel.font = [UIFont systemFontOfSize:f.size.height-LABEL_H_SLOP];
         [self addSubview:rightLabel];
         
         widthLabel = [[UILabel alloc] init];
         widthLabel.textAlignment = NSTextAlignmentCenter;
-        widthLabel.font = [UIFont systemFontOfSize:X_LABEL_H-LABEL_H_SLOP];
+        widthLabel.font = [UIFont systemFontOfSize:f.size.height-LABEL_H_SLOP];
         [self addSubview:widthLabel];
-        
-        self.frame = CGRectMake(0, LATER,
-                                LATER, X_LABEL_H);
     }
     return self;
 }
@@ -56,7 +53,6 @@
 - (void) layoutSubviews {
     CGRect f = self.frame;
     f.origin.y = 2;
-    f.size.height = X_LABEL_H;
     f.size.width /= 3.0;
     f.origin.x = 3;
     leftLabel.frame = f;

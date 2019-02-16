@@ -30,7 +30,6 @@
 #define SMALL_TICK  4
 
 #define Y_LABEL_H     12
-#define X_LABEL_H     12
 #define LABEL_H_SLOP    0   // fontsize = Label_H - slop
 
 

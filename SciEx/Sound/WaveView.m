@@ -11,12 +11,9 @@
 #import "Defines.h"
 #import "AudioDefines.h"
 
-#import "XAxisView.h"
-
 @interface WaveView ()
 
 @property (nonatomic, strong)   WaveGraphView *waveGraphView;
-@property (nonatomic, strong)   XAxisView *xAxisView;
 
 @end
 
@@ -24,7 +21,6 @@
 
 @synthesize graphWidth;
 @synthesize waveGraphView;
-@synthesize xAxisView;
 
 - (id)initWithFrame:(CGRect) f {
     self = [super initWithFrame:f];
@@ -32,9 +28,6 @@
         waveGraphView = [[WaveGraphView alloc]
                          initWithFrame:CGRectMake(0, 0, LATER, LATER)];
         [self addSubview:waveGraphView];
-        
-        xAxisView = [[XAxisView alloc] init];
-        [self addSubview:xAxisView];
     }
     return self;
 }
@@ -44,12 +37,6 @@
     
     SET_VIEW_WIDTH(waveGraphView, self.frame.size.width);
     graphWidth = waveGraphView.frame.size.width;
-
-    SET_VIEW_Y(xAxisView, self.frame.size.height -
-               xAxisView.frame.size.height);
-    SET_VIEW_WIDTH(xAxisView, waveGraphView.frame.size.width);
-    
-    SET_VIEW_HEIGHT(waveGraphView, xAxisView.frame.origin.y);
 }
 
 - (void) updateView {

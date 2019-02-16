@@ -12,7 +12,6 @@
 @interface WaveGraphView ()
 
 @property (strong, nonatomic)   YAxisView *leftAxis;
-@property (strong, nonatomic)   XAxisView *bottomAxis;
 @property (assign)              size_t firstSample;
 @property (assign)              size_t sampleCount;
 
@@ -20,7 +19,7 @@
 
 @implementation WaveGraphView
 
-@synthesize leftAxis, bottomAxis;
+@synthesize leftAxis;
 @synthesize firstSample, sampleCount;
 
 - (id)initWithFrame:(CGRect) f {

@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "XAxisView.h"
 #import "YAxisView.h"
 
 NS_ASSUME_NONNULL_BEGIN
