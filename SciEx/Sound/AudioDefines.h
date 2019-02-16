@@ -16,6 +16,8 @@
 #define DEFAULT_SAMPLE_TYPE     short
 #define RAW_SAMPLE_TYPE         short
 
+#define SHOW_FULL_RANGE -1
+
 // main screen stuff
 
 #define COUNTER_H   44  // same as toolbars

@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign)  CGFloat graphWidth;
 
-- (void) updateView;
+- (void) showRange: (size_t) start length:(long) length;
 
 @end
 

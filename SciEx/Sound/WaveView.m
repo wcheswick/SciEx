@@ -26,7 +26,7 @@
     self = [super initWithFrame:f];
     if (self) {
         waveGraphView = [[WaveGraphView alloc]
-                         initWithFrame:CGRectMake(0, 0, LATER, LATER)];
+                         initWithFrame:CGRectMake(0, 0, LATER, f.size.height)];
         [self addSubview:waveGraphView];
     }
     return self;
@@ -39,18 +39,12 @@
     graphWidth = waveGraphView.frame.size.width;
 }
 
-- (void) updateView {
-    long count = graphWidth;
-    if (count > samples_count)
-        count = samples_count;
-    long start = samples_count - count;
-    if (start < 0) {
-        count += start; //add a minus
-        start = 0;
-    }
-    // Let the main thread do the display stuff
+- (void) showRange: (size_t) start length:(long) length {
+    if (length == SHOW_FULL_RANGE)
+        length = samples_count;
     dispatch_async(dispatch_get_main_queue(), ^(void){
-        [self.waveGraphView showSamples:start count:count];
+        [self.waveGraphView showSamples:start count:length];
+        [self setNeedsDisplay];
     });
 }
 

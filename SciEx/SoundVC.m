@@ -34,6 +34,16 @@
 @property (nonatomic, strong)   OrderedDictionary *soundSampleSections;
 @property (assign)              BOOL AGC;
 
+@property (assign)              long displayFirst, displayCount;
+
+@property (assign)              long graphStart, graphCount;
+
+// for pinch processing
+
+@property (assign)              CGPoint startLeftTouch, startRightTouch;
+@property (assign)              long startStart, startCount, startPan;
+@property (assign)              CGFloat startPanX;
+
 @end
 
 @implementation SoundVC
@@ -48,6 +58,9 @@
 
 @synthesize soundSampleSections;
 @synthesize AGC;
+@synthesize displayFirst, displayCount;
+@synthesize startLeftTouch, startRightTouch;
+@synthesize startStart, startCount, startPan, startPanX;
 
 - (id)init {
     self = [super init];
@@ -56,6 +69,8 @@
         exhibitAvailable = YES;
         soundSampleSections = [[OrderedDictionary alloc] init];
         AGC = NO;
+        displayFirst = 0;
+        displayCount = SHOW_FULL_RANGE;
         
         [self readSoundList];
     }
@@ -135,7 +150,6 @@
 
 #define X_AXIS_H    20
 
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -156,10 +170,21 @@
     FFTView.layer.borderColor = [UIColor redColor].CGColor;
     [containerView addSubview:FFTView];
 
-    waveView = [[WaveView alloc] initWithFrame:CGRectMake(0, BELOW(FFTView.frame) + SEP,
-                                                          LATER, WAVE_H)];
+    waveView = [[WaveView alloc]
+                initWithFrame:CGRectMake(0, BELOW(FFTView.frame) + SEP,
+                                         LATER, WAVE_H)];
     waveView.layer.borderWidth = 1;
     waveView.layer.borderColor = [UIColor orangeColor].CGColor;
+
+    UIPinchGestureRecognizer *pinch = [[UIPinchGestureRecognizer alloc]
+                                       initWithTarget:self
+                                       action:@selector(doPinchAudio:)];
+    [waveView addGestureRecognizer:pinch];
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
+                                       initWithTarget:self
+                                       action:@selector(doPanAudio:)];
+    [waveView addGestureRecognizer:pan];
+
     [containerView addSubview:waveView];
 
     xAxisView = [[XAxisView alloc]
@@ -174,20 +199,19 @@
                                              LATER, CONTROLS_H)];
     controlsView.layer.borderWidth = 1;
     controlsView.layer.borderColor = [UIColor greenColor].CGColor;
-    controlsView = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0,
+    
+    playControlBar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0,
                                                                  LATER, PLAY_CONTROL_H)];
     playControlBar.opaque = YES;
     playControlBar.backgroundColor = [UIColor whiteColor];
-    //    playControlBar.opaque = YES;
-    //    playControlBar.translucent = YES;
-    playControlBar.backgroundColor = [UIColor purpleColor];
     [controlsView addSubview:playControlBar];
     
     [self adjustPlayControlBar];
     
     UISegmentedControl *selectInput = [[UISegmentedControl alloc]
                                        initWithItems:@[@"Mike", @"Samples"]];
-    selectInput.frame = CGRectMake(0, BELOW(playControlBar.frame) + SEP, INPUT_SELECTOR_W, INPUT_SELECTOR_H);
+    selectInput.frame = CGRectMake(0, BELOW(playControlBar.frame) + SEP,
+                                   INPUT_SELECTOR_W, INPUT_SELECTOR_H);
     [selectInput addTarget:self
                     action:@selector(changeInput:)
           forControlEvents:UIControlEventValueChanged];
@@ -208,7 +232,6 @@
     [controlsView addSubview:mikeButton];
     
     SET_VIEW_HEIGHT(controlsView, BELOW(selectInput.frame));
-    controlsView.backgroundColor = [UIColor greenColor];
     [containerView addSubview:controlsView];
 
     sampleTableView = [[UITableView alloc]
@@ -219,7 +242,7 @@
     sampleTableView.backgroundColor = [UIColor whiteColor];
     sampleTableView.layer.borderWidth = 1;
     sampleTableView.layer.borderColor = [UIColor greenColor].CGColor;
-//    [containerView addSubview:sampleTableView];
+    [containerView addSubview:sampleTableView];
 
     [self.view addSubview:containerView];
     self.view.backgroundColor = [UIColor whiteColor];
@@ -419,7 +442,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     }
     inputCount += sampleCount;
     samples_count += sampleCount;
-    [waveView updateView];
+    [waveView showRange: displayFirst length:displayCount];
 }
 
 - (void) newAudioData: (NSData *)buffer {
@@ -481,6 +504,70 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
                            to:sToMs(processStart + ampStartSampleNumber + processLen)];
     [processedView plotClipsFrom:0 width:processLen];
 #endif
+}
+
+- (IBAction)doPanAudio:(UIPanGestureRecognizer *)sender {
+    if ([sender numberOfTouches] < 1)
+        return;
+    CGPoint touch = [sender locationOfTouch:0 inView:sender.view];
+    switch (sender.state) {
+        case UIGestureRecognizerStateBegan:
+            startPanX = touch.x;
+            startPan = displayFirst;
+            break;
+        case UIGestureRecognizerStateChanged:
+        case UIGestureRecognizerStateEnded: {
+            CGFloat samplesPerPixel = displayCount/waveView.graphWidth;
+            CGFloat dx = touch.x - startPanX;
+            displayFirst += dx*samplesPerPixel;
+            if (displayFirst < 0)
+                displayFirst = 0;
+            if (displayFirst + displayCount > samples_count)
+                displayFirst = samples_count - displayCount;
+            [waveView showRange: displayFirst length:displayCount];
+            break;
+        }
+        default:
+            ;
+    }
+}
+
+- (IBAction)doPinchAudio:(UISwipeGestureRecognizer *)sender {
+    if ([sender numberOfTouches] < 2)
+        return;
+    CGPoint touchLeft = [sender locationOfTouch:0 inView:sender.view];
+    CGPoint touchRight = [sender locationOfTouch:1 inView:sender.view];
+    if (touchRight.x < touchLeft.x) {
+        CGPoint p = touchLeft;
+        touchLeft = touchRight;
+        touchRight = p;
+    }
+    //    CGFloat center = (touchRight.x + touchLeft.x)/2.0;
+    switch (sender.state) {
+        case UIGestureRecognizerStateBegan:
+            startRightTouch = touchRight;
+            startLeftTouch = touchLeft;
+            startStart = displayFirst;
+            startCount = displayCount;
+            break;
+        case UIGestureRecognizerStateChanged:
+        case UIGestureRecognizerStateEnded: {
+            CGFloat sep = touchRight.x - touchLeft.x;
+            float zoom = sep/(startRightTouch.x - startLeftTouch.x);
+            //            NSLog(@"handleProcessedPinchGesture: @ %.0f zoom %.2f", center, zoom);
+            displayCount = startCount/zoom;
+            if (displayCount > samples_count)
+                displayCount = samples_count;
+            if (displayFirst + displayCount > samples_count)
+                displayFirst = samples_count - displayCount;
+            if (displayFirst < 0)
+                displayFirst = 0;
+            [waveView showRange: displayFirst length:displayCount];
+            break;
+        }
+        default:
+            ;
+    }
 }
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {
