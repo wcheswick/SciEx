@@ -9,6 +9,7 @@
 #import "WaveGraphView.h"
 #import "AudioDefines.h"
 
+
 @interface WaveGraphView ()
 
 @property (strong, nonatomic)   YAxisView *leftAxis;
@@ -19,6 +20,7 @@
 
 @implementation WaveGraphView
 
+@synthesize audioSample;
 @synthesize leftAxis;
 @synthesize firstSample, sampleCount;
 
@@ -34,10 +36,14 @@
     return self;
 }
 
-- (void) showSamples:(size_t) start count:(size_t)n {
-    firstSample = start;
-    sampleCount = n;
-    [self setNeedsDisplay];
+- (void) showSamples:(size_t) start byteCount:(size_t)byteCount {
+    assert(audioSample);
+    assert(audioSample.samples.length);
+    firstSample = start/audioSample.rawSampleSize;
+    sampleCount = byteCount/audioSample.rawSampleSize;
+    [self performSelectorOnMainThread:@selector(setNeedsDisplay)
+                           withObject:nil
+                        waitUntilDone:NO];
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -86,8 +92,8 @@
     size_t standardCount = 0;
     float maximum, minimum;
     
-    maximum = INT16_MAX;
-    minimum = INT16_MIN;
+    maximum = RAW_SAMPLE_MAX;
+    minimum = RAW_SAMPLE_MIN;
     
     UIColor *color;
     switch (standardCount++) {    // GNUPlot, anyone?  It will do for now
@@ -107,12 +113,17 @@
     
     CGFloat x = 0;
     size_t last = sampleCount;
-    Sample min, max;
+    
+    NSLog(@"size = %lu", (unsigned long)audioSample.samples.length);
+    assert(audioSample.samples.length);
+    RAW_SAMPLE_TYPE min, max;
+    RAW_SAMPLE_TYPE *samples = (RAW_SAMPLE_TYPE *)audioSample.samples.bytes;
+    assert(samples);
 
-    for (size_t i = firstSample; i<firstSample+last; i += compression, x++) {
+    for (size_t i = firstSample; i<firstSample+last; i += compression) {
         min = max = samples[i];
         for (size_t j=1; j<compression && i+j<last; j++) {
-            Sample v = samples[i+j];
+            RAW_SAMPLE_TYPE v = samples[i+j];
             if (v > max)
                 max = v;
             if (v < min)
@@ -124,7 +135,7 @@
 #define YF(v)    (((maximum - v)/(2*maximum))*self.frame.size.height)
         CGFloat y1 = YF(min);
         CGFloat y2 = YF(max);
-        CGRect r = CGRectMake(x, y2, 1, y1 - y2 + 1);
+        CGRect r = CGRectMake(x++, y2, 1, y1 - y2 + 1);
         CGContextFillRect(context, r);
     }
     

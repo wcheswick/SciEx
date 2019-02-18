@@ -7,14 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "AudioExhibitVC.h"
-#import "audioDefines.h"
+#import "ExhibitVC.h"
+#import "AudioSample.h"
+#import "AudioDefines.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SoundVC : AudioExhibitVC <
+@interface SoundVC : ExhibitVC <
     UITableViewDelegate,
-    UITableViewDataSource>
+    UITableViewDataSource,
+    MikeProtocol>
 
 @end
 

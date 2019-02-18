@@ -16,6 +16,9 @@
 #define DEFAULT_SAMPLE_TYPE     short
 #define RAW_SAMPLE_TYPE         short
 
+#define RAW_SAMPLE_MIN  INT16_MIN
+#define RAW_SAMPLE_MAX  INT16_MAX
+
 #define SHOW_FULL_RANGE -1
 
 // main screen stuff
@@ -44,22 +47,5 @@
 #define PR_GRAPH_H      100
 
 #define isIPhone (![[UIDevice currentDevice] respondsToSelector:@selector(userInterfaceIdiom)] || [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone)
-
-
-#define DEFAULT_SAMPLE_RATE     44100
-#define DEFAULT_SAMPLE_TYPE     short
-#define RAW_SAMPLE_TYPE         short
-
-typedef short Sample;
-
-#define SAMPLES_TO_MS(s)    (1000.0*(((float)s)/(float)DEFAULT_SAMPLE_RATE))
-
-#define MAX_SAMPLES     (2000*DEFAULT_SAMPLE_RATE)  // more than half an hour, about 80MB
-
-#define SAMPLE_MEM_INCR (10*DEFAULT_SAMPLE_RATE) // more mem every ten seconds
-
-extern  Sample *samples;
-extern  size_t samples_alloc;
-extern  size_t samples_count;
 
 #endif /* AudioDefines_h */

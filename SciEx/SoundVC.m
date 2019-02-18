@@ -9,6 +9,7 @@
 #import "Defines.h"
 #import "OrderedDictionary.h"
 #import "SoundVC.h"
+#import "AudioSample.h"
 #import "WaveView.h"
 #import "XAxisView.h"
 
@@ -17,7 +18,12 @@
 #define kFileName   @"FileName"
 #define kDescription    @"Description"
 
-#define MikeSegment 0
+#define kLastSampleChosen   @"LastSampleChosen"
+
+typedef enum {
+    MikeSegment = 0,
+    FileSegment = 1,
+} SegmentChoice;
 
 @interface SoundVC ()
 
@@ -33,6 +39,8 @@
 
 @property (nonatomic, strong)   OrderedDictionary *soundSampleSections;
 @property (assign)              BOOL AGC;
+@property (nonatomic, strong)   AudioSample *audioSample;
+@property (nonatomic, strong)   NSString *currentSampleFile;
 
 @property (assign)              long displayFirst, displayCount;
 
@@ -57,7 +65,11 @@
 @synthesize xAxisView;
 
 @synthesize soundSampleSections;
+@synthesize currentSampleFile;
 @synthesize AGC;
+
+@synthesize audioSample;
+
 @synthesize displayFirst, displayCount;
 @synthesize startLeftTouch, startRightTouch;
 @synthesize startStart, startCount, startPan, startPanX;
@@ -71,7 +83,8 @@
         AGC = NO;
         displayFirst = 0;
         displayCount = SHOW_FULL_RANGE;
-        
+        audioSample = nil;
+        currentSampleFile = nil;
         [self readSoundList];
     }
     return self;
@@ -215,11 +228,10 @@
     [selectInput addTarget:self
                     action:@selector(changeInput:)
           forControlEvents:UIControlEventValueChanged];
-    selectInput.selectedSegmentIndex = MikeSegment;
     [controlsView addSubview:selectInput];
 
     mikeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    mikeButton.enabled = [self mikeAvailable];
+    mikeButton.enabled = [AudioSample mikeAvailable];
     mikeButton.frame = CGRectMake(RIGHT(selectInput.frame) + 3*SEP, selectInput.frame.origin.y,
                                   MIKE_BUTTON_W, selectInput.frame.size.height);
     [mikeButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
@@ -318,6 +330,31 @@
     SET_VIEW_WIDTH(sampleTableView, containerView.frame.size.width);
     [sampleTableView reloadData];
     
+    audioSample = [[AudioSample alloc] init];
+    selectInput.enabled = NO;
+    if (mikeButton.enabled) {   // try to setup mike
+        NSString *err = [audioSample initializeMikeForTarget:self];
+        if (!err) {
+            selectInput.selectedSegmentIndex = MikeSegment;
+            selectInput.enabled = YES;
+            [waveView useSample:audioSample];
+        }
+        NSLog(@"mike initialization error %@", err);
+    }
+    if (!selectInput.enabled) {
+        selectInput.selectedSegmentIndex = FileSegment;
+        selectInput.enabled = YES;
+        currentSampleFile = [[NSUserDefaults standardUserDefaults] stringForKey:kLastSampleChosen];
+        if (currentSampleFile) {
+            NSString *err = [audioSample initializeFromPath:currentSampleFile];
+            if (err)
+                NSLog(@"path source initialization error %@", err);
+            else
+                [waveView useSample:audioSample];
+        }
+    }
+    [selectInput setNeedsDisplay];
+
     [waveView setNeedsLayout];
     [self changeInput:selectInput];
 }
@@ -325,7 +362,8 @@
 - (IBAction)changeInput:(UISegmentedControl *)sender {
     NSLog(@"selected input %ld", (long)sender.selectedSegmentIndex);
     if (sender.selectedSegmentIndex == MikeSegment) {
-        NSString *err = [self setupMike];
+        audioSample = [[AudioSample alloc] init];
+        NSString *err = [audioSample initializeMikeForTarget:self];
         if (err) {
             UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Could not start microphone"
                                                                            message:err
@@ -340,11 +378,12 @@
             [alert addAction:defaultAction];
             [self presentViewController:alert animated:YES completion:nil];
         } else {
+            [waveView useSample:audioSample];
             sampleTableView.userInteractionEnabled = NO;
             mikeButton.enabled = YES;
         }
     } else {
-        [self mikeOn: NO];
+        NSLog(@"XXXXXXX switch to file sample");
         mikeButton.enabled = NO;
         sampleTableView.userInteractionEnabled = YES;
     }
@@ -359,9 +398,9 @@
 - (IBAction)doMike:(UIButton *)sender {
     mikeButton.selected = !mikeButton.selected;
     if (mikeButton.selected) {
-        [self mikeOn:YES];
+        [audioSample startMike];
     } else
-        [self mikeOn:NO];
+        [audioSample stopMike];
 }
 
 #pragma mark - Table view data source
@@ -381,7 +420,7 @@ titleForHeaderInSection:(NSInteger)section {
     return key;
 }
 
-#define CellId  @"TVCellID"
+#define CellId  @"AudioSampleCellID"
 
 - (UITableViewCell *)tableView:(UITableView *)tableView
          cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -405,107 +444,6 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"selected sample file %@", [sample objectForKey:kFileName]);
 }
 
-static u_long inputCount = 0;
-
-// The microphone has delivered one or more buffers of sound.
-
-- (void)captureOutput:(AVCaptureOutput *)output
-didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
-       fromConnection:(AVCaptureConnection *)connection {
-    
-    size_t sampleSize = CMSampleBufferGetSampleSize(sampleBuffer,0);
-    assert(sampleSize == sizeof(Sample));
-    size_t sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
-    size_t sampleLength = CMSampleBufferGetTotalSampleSize(sampleBuffer);
-    assert(sampleSize * sampleCount == sampleLength);
-    
-    if (samples_count + sampleCount > samples_alloc) {
-        if (samples_count + sampleCount == MAX_SAMPLES) {
-            NSLog(@"*** buffer full, now what?");
-            return;
-        }
-        samples_alloc += SAMPLE_MEM_INCR;
-        if (samples_alloc > MAX_SAMPLES)
-            samples_alloc = MAX_SAMPLES;
-        samples = (Sample *)realloc(samples, samples_alloc*sizeof(Sample));
-        assert(samples);
-    }
-
-    CMBlockBufferRef blockbuff = CMSampleBufferGetDataBuffer(sampleBuffer);
-    OSStatus stat = CMBlockBufferCopyDataBytes(blockbuff,
-                                      0,
-                                      sampleLength,
-                                      &samples[samples_count]);
-    if (stat != kCMBlockBufferNoErr) {
-        NSLog(@"sound block fetch error %d", (int)stat);
-        return;
-    }
-    inputCount += sampleCount;
-    samples_count += sampleCount;
-    [waveView showRange: displayFirst length:displayCount];
-}
-
-- (void) newAudioData: (NSData *)buffer {
-#ifdef notdef
-    size_t nSamples = [buffer length]/sizeof(DEFAULT_SAMPLE_TYPE);
-    if (amp.len + nSamples > amp.alloc) {
-        // amp buffer is full.  If we are paused for analysis,
-        // drop the data, so we don't move the buffer, else
-        // forget a chunk, and continue
-        if (paused) {
-            overflow++;
-        } else {
-            size_t sToForget = amp.alloc*AMP_REDUCE_PCT/100.0;
-            if (sToForget > amp.len)    // should never happen, but ok
-                sToForget = amp.len;
-            NSLog(@"shift, @%zu: forget %zu from %zu",
-                  ampStartSampleNumber, sToForget, amp.len);
-            memmove(&AMP[0], &AMP[sToForget], sizeof(AMP[0])*(amp.len - sToForget));
-            amp.len -= sToForget;
-            ampStartSampleNumber += sToForget;
-        }
-    }
-    
-    short *raw = (short *)[buffer bytes];
-    size_t i;
-    for (i=0; i<nSamples && amp.len + i < amp.alloc; i++) {
-        ushort a = abs(raw[i]);
-        if (a > amp.maximum)
-            amp.maximum = a;
-        if (a < amp.minimum)
-            amp.minimum = a;
-        AMP[amp.len++] = a;
-    }
-    
-    long ampStart = amp.len - msToSamples(srcGraphWidthMs);
-    long sourceLen = amp.len - ampStart;
-    if (ampStart < 0)
-        ampStart = 0;
-    [sourceView xRangeFrom:sToMs(ampStart + ampStartSampleNumber)
-                        to:sToMs(ampStart + sourceLen + ampStartSampleNumber)];
-    [sourceView plotClipsFrom: ampStart width:sourceLen];
-    [self setNeedsDisplay];
-    busy = NO;
-    
-    [self processSample];
-#endif
-}
-
-- (void) processSample {
-#ifdef notdef
-    long processLen = msToSamples(procGraphWidthMs);
-    long processStart = amp.len - processLen;
-    if (processStart < 0) {
-        processLen += processStart;
-        processStart = 0;
-    }
-    [self processSampleFrom: processStart length:processLen];
-    [processedView xRangeFrom:sToMs(processStart + ampStartSampleNumber)
-                           to:sToMs(processStart + ampStartSampleNumber + processLen)];
-    [processedView plotClipsFrom:0 width:processLen];
-#endif
-}
-
 - (IBAction)doPanAudio:(UIPanGestureRecognizer *)sender {
     if ([sender numberOfTouches] < 1)
         return;
@@ -522,9 +460,10 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
             displayFirst += dx*samplesPerPixel;
             if (displayFirst < 0)
                 displayFirst = 0;
+            size_t samples_count = audioSample.samples.length/sizeof(RAW_SAMPLE_TYPE);
             if (displayFirst + displayCount > samples_count)
                 displayFirst = samples_count - displayCount;
-            [waveView showRange: displayFirst length:displayCount];
+            [waveView showRange: displayFirst byteCount:displayCount];
             break;
         }
         default:
@@ -556,18 +495,24 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
             float zoom = sep/(startRightTouch.x - startLeftTouch.x);
             //            NSLog(@"handleProcessedPinchGesture: @ %.0f zoom %.2f", center, zoom);
             displayCount = startCount/zoom;
+            size_t samples_count = audioSample.samples.length/sizeof(RAW_SAMPLE_TYPE);
             if (displayCount > samples_count)
                 displayCount = samples_count;
             if (displayFirst + displayCount > samples_count)
                 displayFirst = samples_count - displayCount;
             if (displayFirst < 0)
                 displayFirst = 0;
-            [waveView showRange: displayFirst length:displayCount];
+            [waveView showRange: displayFirst byteCount:displayCount];
             break;
         }
         default:
             ;
     }
+}
+
+- (void) audioArrivedFromMike {
+    NSLog(@" AudioSample:       %p", audioSample);
+    [waveView showRange:0 byteCount:audioSample.samples.length];
 }
 
 - (IBAction)doDone:(UISwipeGestureRecognizer *)sender {

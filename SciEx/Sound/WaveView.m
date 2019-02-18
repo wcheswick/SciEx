@@ -21,15 +21,24 @@
 
 @synthesize graphWidth;
 @synthesize waveGraphView;
+@synthesize audioSample;
 
 - (id)initWithFrame:(CGRect) f {
     self = [super initWithFrame:f];
     if (self) {
+        audioSample = nil;
         waveGraphView = [[WaveGraphView alloc]
                          initWithFrame:CGRectMake(0, 0, LATER, f.size.height)];
         [self addSubview:waveGraphView];
     }
     return self;
+}
+
+- (void) useSample:(AudioSample *)newSample {
+    audioSample = newSample;
+    waveGraphView.audioSample = newSample;
+    NSLog(@" audioSample:       %p", audioSample);
+    NSLog(@" waveaudioSample:   %p", waveGraphView.audioSample);
 }
 
 - (void) layoutSubviews {
@@ -39,13 +48,16 @@
     graphWidth = waveGraphView.frame.size.width;
 }
 
-- (void) showRange: (size_t) start length:(long) length {
-    if (length == SHOW_FULL_RANGE)
-        length = samples_count;
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        [self.waveGraphView showSamples:start count:length];
+- (void) showRange: (size_t) start byteCount:(size_t) byteCount {
+    NSLog(@" audioSample:       %p", audioSample);
+    NSLog(@" waveaudioSample:   %p", waveGraphView.audioSample);
+    assert(audioSample.samples.length);
+    if (byteCount == SHOW_FULL_RANGE)
+        byteCount = audioSample.samples.length;
+//    dispatch_async(dispatch_get_main_queue(), ^(void){
+        [self.waveGraphView showSamples:start byteCount:byteCount];
         [self setNeedsDisplay];
-    });
+//    });
 }
 
 @end
