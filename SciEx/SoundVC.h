@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "ExhibitVC.h"
-#import "AudioSample.h"
+#import "AudioClip.h"
 #import "AudioDefines.h"
 
 NS_ASSUME_NONNULL_BEGIN

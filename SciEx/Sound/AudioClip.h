@@ -1,5 +1,5 @@
 //
-//  AudioSample.h
+//  AudioClip.h
 //  SciEx
 //
 //  Created by ches on 2/17/19.
@@ -23,20 +23,26 @@
 @protocol MikeProtocol <NSObject>
 
 - (void) audioArrivedFromMike;
+- (void) mikeBufferFull;
 
 @end
 
-@interface AudioSample : NSObject <AVCaptureAudioDataOutputSampleBufferDelegate> {
-    NSMutableData *samples;
+@interface AudioClip : NSObject <AVCaptureAudioDataOutputSampleBufferDelegate> {
+    Sample *samples;
     size_t rawSampleSize;
     size_t sampleRate;      // samples per second
+    size_t samplesAlloced;
+    size_t sampleCount;
+    
     BOOL isMike, mikeIsOn;
     __unsafe_unretained id<MikeProtocol> caller;
 }
 
-@property (strong)  NSData *samples;
+@property (assign)  Sample *samples;
 @property (assign)  size_t rawSampleSize;
 @property (assign)  size_t sampleRate;
+@property (assign)  size_t sampleCount;
+
 @property (assign)  BOOL isMike, mikeIsOn;
 @property (assign)  __unsafe_unretained id<MikeProtocol> caller;
 
@@ -46,5 +52,7 @@
 + (BOOL) mikeAvailable;
 - (void) startMike;
 - (void) stopMike;
+
+- (void) close;
 
 @end

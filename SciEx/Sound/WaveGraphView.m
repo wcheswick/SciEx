@@ -13,22 +13,22 @@
 @interface WaveGraphView ()
 
 @property (strong, nonatomic)   YAxisView *leftAxis;
-@property (assign)              size_t firstSample;
-@property (assign)              size_t sampleCount;
+@property (assign)              size_t firstDisplay; // in samples, not bytes
+@property (assign)              size_t numberDisplayed; // in samples, not bytes
 
 @end
 
 @implementation WaveGraphView
 
-@synthesize audioSample;
+@synthesize audioClip;
 @synthesize leftAxis;
-@synthesize firstSample, sampleCount;
+@synthesize firstDisplay, numberDisplayed;
 
 - (id)initWithFrame:(CGRect) f {
     self = [super initWithFrame:f];
     if (self) {
-        firstSample = 0;
-        sampleCount = 0;
+        firstDisplay = 0;
+        numberDisplayed = 0;
         self.layer.borderWidth = 0.5;
         self.layer.borderColor = [UIColor purpleColor].CGColor;
         self.layer.cornerRadius = 1.0;
@@ -36,14 +36,15 @@
     return self;
 }
 
-- (void) showSamples:(size_t) start byteCount:(size_t)byteCount {
-    assert(audioSample);
-    assert(audioSample.samples.length);
-    firstSample = start/audioSample.rawSampleSize;
-    sampleCount = byteCount/audioSample.rawSampleSize;
-    [self performSelectorOnMainThread:@selector(setNeedsDisplay)
-                           withObject:nil
-                        waitUntilDone:NO];
+- (void) showSamplesFrom:(size_t) startSample count:(size_t) nSamples {
+    assert(audioClip);
+    assert(audioClip.samples);
+    firstDisplay = startSample;
+    numberDisplayed = nSamples;
+    assert(startSample + nSamples <= audioClip.sampleCount);
+    dispatch_async(dispatch_get_main_queue(), ^(void) {
+        [self setNeedsDisplay];
+    });
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -65,13 +66,13 @@
     CGContextSaveGState(context);
     CGContextSetFillColorWithColor(context, [UIColor whiteColor].CGColor);
     CGContextFillRect(context,self.bounds);
-    if (sampleCount == 0 || self.frame.size.width == 0) {
+    if (numberDisplayed == 0 || self.frame.size.width == 0) {
         CGContextRestoreGState(context);
         CGContextFlush(context);
         return;
     }
     
-    float samplesPerPixel = sampleCount/self.frame.size.width;
+    float samplesPerPixel = numberDisplayed/self.frame.size.width;
     
     if (samplesPerPixel == 0) {
         NSLog(@"inconceivable, divide by zero");
@@ -90,11 +91,10 @@
     }
     
     size_t standardCount = 0;
-    float maximum, minimum;
     
-    maximum = RAW_SAMPLE_MAX;
-    minimum = RAW_SAMPLE_MIN;
-    
+    float maximum = RAW_SAMPLE_MAX;
+//    float minimum = RAW_SAMPLE_MIN;
+
     UIColor *color;
     switch (standardCount++) {    // GNUPlot, anyone?  It will do for now
         case 0:
@@ -112,22 +112,22 @@
     CGContextSetFillColorWithColor(context, color.CGColor);
     
     CGFloat x = 0;
-    size_t last = sampleCount;
     
-    NSLog(@"size = %lu", (unsigned long)audioSample.samples.length);
-    assert(audioSample.samples.length);
-    RAW_SAMPLE_TYPE min, max;
-    RAW_SAMPLE_TYPE *samples = (RAW_SAMPLE_TYPE *)audioSample.samples.bytes;
-    assert(samples);
+    Sample min, max;
 
-    for (size_t i = firstSample; i<firstSample+last; i += compression) {
-        min = max = samples[i];
-        for (size_t j=1; j<compression && i+j<last; j++) {
-            RAW_SAMPLE_TYPE v = samples[i+j];
-            if (v > max)
-                max = v;
-            if (v < min)
-                min = v;
+    for (size_t i = 0; i<numberDisplayed; i += compression) {
+        size_t p = i+firstDisplay;
+        min = max = audioClip.samples[p];
+        for (size_t j=1; j<compression && p+j < audioClip.sampleCount; j++) {
+            if (p+j >= audioClip.sampleCount) {
+                NSLog(@"***  %zu + %zu >= %zu", p, j, audioClip.sampleCount);
+                assert(p+j < audioClip.sampleCount); // XXXXXXXX 1023+1
+            }
+            Sample s = audioClip.samples[p+j];
+            if (s > max)
+                max = s;
+            if (s < min)
+                min = s;
         }
         // draw a line between min and max, with
         // zero X axis halfway up.  maximum == minimum,

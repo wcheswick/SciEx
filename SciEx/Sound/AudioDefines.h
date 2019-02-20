@@ -15,11 +15,14 @@
 #define DEFAULT_SAMPLE_RATE     44100
 #define DEFAULT_SAMPLE_TYPE     short
 #define RAW_SAMPLE_TYPE         short
+#define MAX_MIKE_LEN        (DEFAULT_SAMPLE_RATE*60*5)  // five minutes
 
 #define RAW_SAMPLE_MIN  INT16_MIN
 #define RAW_SAMPLE_MAX  INT16_MAX
 
-#define SHOW_FULL_RANGE -1
+typedef DEFAULT_SAMPLE_TYPE Sample;
+#define SAMPLE_TO_BYTE(s)   ((s)*sizeof(Sample))
+#define BYTE_TO_SAMPLE(b)   ((b)/sizeof(Sample))
 
 // main screen stuff
 

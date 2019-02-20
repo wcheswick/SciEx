@@ -1,17 +1,18 @@
 //
-//  AudioSample.m
+//  AudioClip.m
 //  SciEx
 //
 //  Created by ches on 2/17/19.
 //  Copyright © 2019 Cheswick.com. All rights reserved.
 //
 
-#import "AudioSample.h"
+#import "AudioClip.h"
 
 #define MIKE_BUF_SIZE_SECONDS   (60*20)
 
-@interface AudioSample ()
+@interface AudioClip ()
 
+@property (assign)              size_t samplesAlloced;
 @property (nonatomic, strong)   AVCaptureSession *captureSession;
 @property (nonatomic, strong)   AVCaptureDevice *audioDevice;
 @property (nonatomic, strong)   AVCaptureDeviceInput *audioInput;
@@ -19,12 +20,14 @@
 
 @end
 
-@implementation AudioSample
+@implementation AudioClip
 
 @synthesize sampleRate;
 @synthesize samples;
 @synthesize rawSampleSize;
 @synthesize isMike, mikeIsOn;
+
+@synthesize samplesAlloced, sampleCount;
 
 @synthesize captureSession;
 @synthesize audioDevice, audioInput;
@@ -38,6 +41,8 @@
         caller = nil;
         isMike = mikeIsOn = NO;
         samples = nil;
+        samplesAlloced = 0;
+        sampleCount = 0;
     }
     return self;
 }
@@ -45,7 +50,13 @@
 - (NSString *) initializeMikeForTarget:(__unsafe_unretained id<MikeProtocol>) target {
     sampleRate = DEFAULT_SAMPLE_RATE;
     rawSampleSize = sizeof(RAW_SAMPLE_TYPE);
-    samples = [[NSMutableData alloc] init];
+    samplesAlloced = MAX_MIKE_LEN;  // the full monte, for now
+    samples = (Sample *)calloc(MAX_MIKE_LEN, sizeof(Sample));
+    if (!samples) {
+        samplesAlloced = 0;
+        return @"Not enough memory for the microphone";
+    }
+    sampleCount = 0;
     
     NSError *error;
     
@@ -53,7 +64,7 @@
     [captureSession beginConfiguration];
     
     captureSession.sessionPreset = AVCaptureSessionPresetHigh;
-    AVCaptureDevice *microphoneDevice = [AudioSample mikeDevice];
+    AVCaptureDevice *microphoneDevice = [AudioClip mikeDevice];
     if (!microphoneDevice)
         return @"No microphone device available.";
     
@@ -111,39 +122,48 @@
     mikeIsOn = NO;
 }
 
-static u_long inputCount = 0;
-
-// The microphone has delivered one or more buffers of sound.
-
 - (void)captureOutput:(AVCaptureOutput *)output
 didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
        fromConnection:(AVCaptureConnection *)connection {
     
+    if (!captureSession.running) {
+        NSLog(@"data without capture running.  Hmm. Ignored");
+        return;
+    }
     size_t sampleSize = CMSampleBufferGetSampleSize(sampleBuffer,0);
     assert(sampleSize == sizeof(RAW_SAMPLE_TYPE));
-    size_t sampleCount = CMSampleBufferGetNumSamples(sampleBuffer);
-    size_t sampleLength = CMSampleBufferGetTotalSampleSize(sampleBuffer);
-    assert(sampleSize * sampleCount == sampleLength);
+    size_t newCount = CMSampleBufferGetNumSamples(sampleBuffer);
+    size_t incomingLength = CMSampleBufferGetTotalSampleSize(sampleBuffer);
+    assert(sampleSize * newCount == incomingLength);
 
+    if (sampleCount*sizeof(Sample) + incomingLength > samplesAlloced) {
+        NSLog(@" mike buffer full, %zu + %zu > %zu",
+              sampleCount, incomingLength, samplesAlloced);
+        [self stopMike];
+        [caller mikeBufferFull];
+        return;
+    }
     CMBlockBufferRef blockbuff = CMSampleBufferGetDataBuffer(sampleBuffer);
-    void *buffer = malloc(sampleLength);
-    assert(buffer);
     OSStatus stat;
     stat = CMBlockBufferCopyDataBytes(blockbuff,
                                       0,
-                                      sampleLength,
-                                      buffer);
+                                      incomingLength,
+                                      &samples[sampleCount]);
     if (stat != kCMBlockBufferNoErr) {
         NSLog(@"sound block fetch error %d", (int)stat);
         return;
     }
-    NSData *rawData = [NSData dataWithBytesNoCopy:buffer length:sampleLength freeWhenDone:YES];
-    
-    [samples appendData:rawData];
-    NSLog(@"samples length = %lu", (unsigned long)samples.length);
-    inputCount += sampleCount;
-    
+    sampleCount += newCount;
     [caller audioArrivedFromMike];
+}
+
+- (void) close {
+    if (samplesAlloced) {
+        samplesAlloced = 0;
+        free(samples);
+    }
+    sampleCount = 0;
+    samples = nil;
 }
 
 #ifdef notdef

@@ -8,18 +8,18 @@
 
 #import <UIKit/UIKit.h>
 
-#import "AudioSample.h"
+#import "AudioClip.h"
 #import "YAxisView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface WaveGraphView : UIView {
-    AudioSample *audioSample;
+    AudioClip *audioClip;
 }
 
-@property (nonatomic, strong)   AudioSample *audioSample;
+@property (strong)   AudioClip *audioClip;
 
-- (void) showSamples:(size_t) start byteCount:(size_t)byteCount;
+- (void) showSamplesFrom: (size_t) startSample count:(size_t) nSamples;
 
 @end
 

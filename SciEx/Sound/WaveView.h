@@ -7,20 +7,20 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "AudioSample.h"
+#import "AudioClip.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface WaveView : UIView {
-    AudioSample *audioSample;
+    AudioClip *audioClip;
     CGFloat graphWidth;     // a non-UIKit source of our width
 }
 
-@property (nonatomic, strong)   AudioSample *audioSample;
+@property (strong)   AudioClip *audioClip;
 @property (assign)  CGFloat graphWidth;
 
-- (void) useSample:(AudioSample *)newSample;
-- (void) showRange: (size_t) start byteCount:(size_t) byteCount;
+- (void) useClip:(AudioClip *)newClip;
+- (void) showRangeFrom: (size_t) startSample count:(size_t) nSamples;
 
 @end
 

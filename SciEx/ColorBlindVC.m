@@ -286,6 +286,8 @@ static char *src_images[] = {
 }
 
 - (void) viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    
     transformReady = NO;
     if (abgr) {
         free(abgr);

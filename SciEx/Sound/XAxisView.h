@@ -7,9 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "AudioClip.h"
 
-@interface XAxisView : UIView
+@interface XAxisView : UIView {
+    AudioClip *audioClip;
+}
 
-- (void) range: (float) left to:(float)right;
+@property (nonatomic, strong)   AudioClip *audioClip;
+
+- (void) range: (size_t) leftSample to:(size_t)rightSample;
 
 @end

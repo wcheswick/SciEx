@@ -38,7 +38,7 @@
 		FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4A2203620300E99FF1 /* ExhibitVC.m */; };
 		FB52CA4E2203A7DE00E99FF1 /* VideoExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */; };
 		FB52CA512204C4E300E99FF1 /* PixelView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA502204C4E300E99FF1 /* PixelView.m */; };
-		FB8F1FE52219A08A00A4A04C /* AudioSample.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8F1FE42219A08A00A4A04C /* AudioSample.m */; };
+		FB8F1FE52219A08A00A4A04C /* AudioClip.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8F1FE42219A08A00A4A04C /* AudioClip.m */; };
 		FB943FB62214517F00DD3EC5 /* index in Resources */ = {isa = PBXBuildFile; fileRef = FB943FB52214517F00DD3EC5 /* index */; };
 		FB943FB92215F8B100DD3EC5 /* OrderedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = FB943FB82215F8B100DD3EC5 /* OrderedDictionary.m */; };
 		FBA89A612210CB1D00CCE74B /* dreg.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA89A5F2210CB1D00CCE74B /* dreg.m */; };
@@ -118,8 +118,8 @@
 		FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoExhibitVC.m; sourceTree = "<group>"; };
 		FB52CA4F2204C4E300E99FF1 /* PixelView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PixelView.h; sourceTree = "<group>"; };
 		FB52CA502204C4E300E99FF1 /* PixelView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PixelView.m; sourceTree = "<group>"; };
-		FB8F1FE32219A08A00A4A04C /* AudioSample.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioSample.h; sourceTree = "<group>"; };
-		FB8F1FE42219A08A00A4A04C /* AudioSample.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioSample.m; sourceTree = "<group>"; };
+		FB8F1FE32219A08A00A4A04C /* AudioClip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioClip.h; sourceTree = "<group>"; };
+		FB8F1FE42219A08A00A4A04C /* AudioClip.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioClip.m; sourceTree = "<group>"; };
 		FB943FB52214517F00DD3EC5 /* index */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = index; sourceTree = "<group>"; };
 		FB943FB72215F8B100DD3EC5 /* OrderedDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OrderedDictionary.h; sourceTree = "<group>"; };
 		FB943FB82215F8B100DD3EC5 /* OrderedDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OrderedDictionary.m; sourceTree = "<group>"; };
@@ -220,8 +220,8 @@
 			isa = PBXGroup;
 			children = (
 				FBA89A6C2211B42100CCE74B /* AudioDefines.h */,
-				FB8F1FE32219A08A00A4A04C /* AudioSample.h */,
-				FB8F1FE42219A08A00A4A04C /* AudioSample.m */,
+				FB8F1FE32219A08A00A4A04C /* AudioClip.h */,
+				FB8F1FE42219A08A00A4A04C /* AudioClip.m */,
 				FBA89A6D2212132F00CCE74B /* WaveView.h */,
 				FBA89A6E2212132F00CCE74B /* WaveView.m */,
 				FBA89A692211ADAA00CCE74B /* WaveGraphView.h */,
@@ -474,7 +474,7 @@
 				FB52C9ED22034F7900E99FF1 /* SoundVC.m in Sources */,
 				FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */,
 				FBA89A612210CB1D00CCE74B /* dreg.m in Sources */,
-				FB8F1FE52219A08A00A4A04C /* AudioSample.m in Sources */,
+				FB8F1FE52219A08A00A4A04C /* AudioClip.m in Sources */,
 				FB943FB92215F8B100DD3EC5 /* OrderedDictionary.m in Sources */,
 				FBD7946C220B2B3000FC09D8 /* cb.c in Sources */,
 				FB52C9CD2203444A00E99FF1 /* AppDelegate.m in Sources */,

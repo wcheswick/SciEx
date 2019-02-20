@@ -15,14 +15,15 @@
 @property (nonatomic, strong)   UILabel *leftLabel;
 @property (nonatomic, strong)   UILabel *rightLabel;
 @property (nonatomic, strong)   UILabel *widthLabel;
-@property (assign)              float leftValue;
-@property (assign)              float rightValue;
+@property (assign)              size_t leftValue;
+@property (assign)              size_t rightValue;
 
 @end
 
 
 @implementation XAxisView
 
+@synthesize audioClip;
 @synthesize leftLabel;
 @synthesize rightLabel;
 @synthesize widthLabel;
@@ -34,17 +35,17 @@
     if (self) {
         leftLabel = [[UILabel alloc] init];
         leftLabel.textAlignment = NSTextAlignmentLeft;
-        leftLabel.font = [UIFont systemFontOfSize:f.size.height-LABEL_H_SLOP];
+        leftLabel.font = [UIFont systemFontOfSize:f.size.height*0.6];
         [self addSubview:leftLabel];
         
         rightLabel = [[UILabel alloc] init];
         rightLabel.textAlignment = NSTextAlignmentRight;
-        rightLabel.font = [UIFont systemFontOfSize:f.size.height-LABEL_H_SLOP];
+        rightLabel.font = [UIFont systemFontOfSize:f.size.height*0.6];
         [self addSubview:rightLabel];
         
         widthLabel = [[UILabel alloc] init];
         widthLabel.textAlignment = NSTextAlignmentCenter;
-        widthLabel.font = [UIFont systemFontOfSize:f.size.height-LABEL_H_SLOP];
+        widthLabel.font = [UIFont systemFontOfSize:f.size.height*0.6];
         [self addSubview:widthLabel];
     }
     return self;
@@ -62,7 +63,7 @@
     rightLabel.frame = f;
     [rightLabel setNeedsDisplay];
     
-    f.origin.y += 5;
+//    f.origin.y += 5;
     f.origin.x = 0;
     f.size.width = self.frame.size.width;
     widthLabel.frame = f;
@@ -70,9 +71,8 @@
     [self setNeedsDisplay];
 }
 
-- (NSString *) showMs: (float) ms {
-    if (ms >= 1000.0) {
-        float seconds = ms/1000.0;
+- (NSString *) showTime: (float) seconds {
+    if (seconds >= 1.0) {
         int minutes = seconds / 60;
         if (minutes) {
             return [NSString stringWithFormat:@"%d:%04.1f",
@@ -80,25 +80,27 @@
         } else
             return [NSString stringWithFormat:@"%.1f", seconds];
     }
+    float ms = seconds/1000.0;
     if (ms > 20.0)
         return [NSString stringWithFormat:@"%.0f ms", ms];
     if (ms == 0.)
-        return [NSString stringWithFormat:@"%.1f", ms];
+        return [NSString stringWithFormat:@"%.1f s", ms];
     return [NSString stringWithFormat:@"%.1f ms", ms];
 }
 
-- (void) range: (float) left to:(float)right {
-    self.leftValue = left;
-    leftLabel.text = [self showMs:leftValue];
-//    [leftLabel setNeedsDisplay];
+#define SAMPLE_TO_SECONDS(s)    ((float)s/audioClip.sampleRate)
+
+- (void) range: (size_t) leftSample to:(size_t)rightSample {
+    self.leftValue = leftSample;
+    leftLabel.text = [self showTime:SAMPLE_TO_SECONDS(leftValue)];
+    self.rightValue = rightSample;
+    rightLabel.text = [self showTime:SAMPLE_TO_SECONDS(rightValue)];
     
-    self.rightValue = right;
-    rightLabel.text = [self showMs:rightValue];
-//    [rightLabel setNeedsDisplay];
-    
-    float dt = right - left;
-    widthLabel.text = [NSString stringWithFormat:@"width: %@", [self showMs:dt]];
-//    [widthLabel setNeedsDisplay];
+    size_t dt = rightValue - leftValue;
+    widthLabel.text = [NSString stringWithFormat:@"%@ of %@ (%.1f%%)",
+                       [self showTime:SAMPLE_TO_SECONDS(dt)],
+                       [self showTime:SAMPLE_TO_SECONDS(audioClip.sampleCount)],
+                       ((float)dt*100.0)/(float)(audioClip.sampleCount)];
 }
 
 - (void)drawRect:(CGRect)rect { // force draylayer call
