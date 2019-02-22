@@ -11,6 +11,7 @@
 #import "SoundVC.h"
 #import "AudioClip.h"
 #import "WaveView.h"
+#import "SpectrumView.h"
 #import "XAxisView.h"
 
 // keys used by dictionaries in soundClipSections:
@@ -33,7 +34,8 @@ typedef enum {
 @property (nonatomic, strong)   UIButton *mikeButton;
 @property (nonatomic, strong)   UIToolbar *playControlBar;
 @property (nonatomic, strong)   UISegmentedControl *selectInput;
-@property (nonatomic, strong)   UIView *FFTView;
+@property (nonatomic, strong)   SpectrumView *spectrumView;
+@property (assign)              CGSize spectrumViewSize;
 @property (nonatomic, strong)   WaveView *waveView;
 @property (nonatomic, strong)   XAxisView *xAxisView;
 
@@ -60,7 +62,8 @@ typedef enum {
 @synthesize sampleTableView;
 @synthesize controlsView, selectInput, playControlBar;
 @synthesize mikeButton;
-@synthesize FFTView;
+@synthesize spectrumView;
+@synthesize spectrumViewSize;
 @synthesize waveView;
 @synthesize xAxisView;
 
@@ -178,13 +181,13 @@ typedef enum {
     containerView = [[UIView alloc] init];
     containerView.backgroundColor = [UIColor whiteColor];
     
-    FFTView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, LATER, FFT_H)];
-    FFTView.layer.borderWidth = 1;
-    FFTView.layer.borderColor = [UIColor redColor].CGColor;
-    [containerView addSubview:FFTView];
+    spectrumView = [[SpectrumView alloc] initWithFrame:CGRectMake(0, 0, LATER, FFT_H)];
+    spectrumView.layer.borderWidth = 1;
+    spectrumView.layer.borderColor = [UIColor redColor].CGColor;
+    [containerView addSubview:spectrumView];
 
     waveView = [[WaveView alloc]
-                initWithFrame:CGRectMake(0, BELOW(FFTView.frame) + SEP,
+                initWithFrame:CGRectMake(0, BELOW(spectrumView.frame) + SEP,
                                          LATER, WAVE_H)];
     waveView.layer.borderWidth = 1;
     waveView.layer.borderColor = [UIColor orangeColor].CGColor;
@@ -322,7 +325,8 @@ typedef enum {
     [self.navigationController setNavigationBarHidden:NO animated:YES];
     self.navigationController.navigationBar.opaque = YES;
     
-    SET_VIEW_WIDTH(FFTView, containerView.frame.size.width);
+    SET_VIEW_WIDTH(spectrumView, containerView.frame.size.width);
+    spectrumViewSize = spectrumView.frame.size;   // a non-main thread size
     SET_VIEW_WIDTH(waveView, containerView.frame.size.width);
     SET_VIEW_WIDTH(xAxisView, containerView.frame.size.width);
     SET_VIEW_WIDTH(playControlBar, containerView.frame.size.width);
@@ -523,6 +527,13 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 
 - (void) audioArrivedFromMike {
     [self displayRangeFrom:displayFirst length:displayCount];
+}
+
+- (void) spectrumChanged {
+    NSData *spectrumData = [audioClip spectrumPixelDataForSize:spectrumViewSize];
+    dispatch_async(dispatch_get_main_queue(), ^(void) {
+        [self->spectrumView displayPixels: spectrumData];
+    });
 }
 
 - (void) mikeBufferFull {

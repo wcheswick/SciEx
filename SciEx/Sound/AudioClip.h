@@ -23,6 +23,7 @@
 @protocol MikeProtocol <NSObject>
 
 - (void) audioArrivedFromMike;
+- (void) spectrumChanged;
 - (void) mikeBufferFull;
 
 @end
@@ -52,6 +53,8 @@
 + (BOOL) mikeAvailable;
 - (void) startMike;
 - (void) stopMike;
+
+- (NSData *) spectrumPixelDataForSize:(CGSize) size;
 
 - (void) close;
 

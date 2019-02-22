@@ -24,6 +24,11 @@ typedef DEFAULT_SAMPLE_TYPE Sample;
 #define SAMPLE_TO_BYTE(s)   ((s)*sizeof(Sample))
 #define BYTE_TO_SAMPLE(b)   ((b)/sizeof(Sample))
 
+
+#define SpectrumPixel   uint8_t    // 0-255, use a colormap to color
+
+#define SPECTRUM_MAX_PIXEL  ((1<<(sizeof(SpectrumPixel)*8)) - 1)
+
 // main screen stuff
 
 #define COUNTER_H   44  // same as toolbars
