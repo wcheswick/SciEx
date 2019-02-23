@@ -181,9 +181,18 @@ typedef enum {
     containerView = [[UIView alloc] init];
     containerView.backgroundColor = [UIColor whiteColor];
     
-    spectrumView = [[SpectrumView alloc] initWithFrame:CGRectMake(0, 0, LATER, FFT_H)];
+    spectrumView = [[SpectrumView alloc]
+                    initWithFrame:CGRectMake(0, 0, LATER, FFT_H)];
     spectrumView.layer.borderWidth = 1;
     spectrumView.layer.borderColor = [UIColor redColor].CGColor;
+    UIPinchGestureRecognizer *pinchSpectrum = [[UIPinchGestureRecognizer alloc]
+                                       initWithTarget:self
+                                       action:@selector(doPinchSpectrum:)];
+    [spectrumView addGestureRecognizer:pinchSpectrum];
+    UIPanGestureRecognizer *panSpectrum = [[UIPanGestureRecognizer alloc]
+                                   initWithTarget:self
+                                   action:@selector(doPanSpectrum:)];
+    [spectrumView addGestureRecognizer:panSpectrum];
     [containerView addSubview:spectrumView];
 
     waveView = [[WaveView alloc]
@@ -454,6 +463,13 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"selected sample file %@", [sample objectForKey:kFileName]);
 }
 
+- (void) displayRangeFrom:(size_t)first length:(size_t)count {
+    [waveView showRangeFrom:first count:count];
+    dispatch_async(dispatch_get_main_queue(), ^(void) {
+        [self->xAxisView range:self->displayFirst to:self->displayFirst + count];
+    });
+}
+
 - (IBAction)doPanAudio:(UIPanGestureRecognizer *)sender {
     if ([sender numberOfTouches] < 1)
         return;
@@ -480,14 +496,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     }
 }
 
-- (void) displayRangeFrom:(size_t)first length:(size_t)count {
-    [waveView showRangeFrom:first count:count];
-    dispatch_async(dispatch_get_main_queue(), ^(void) {
-        [self->xAxisView range:self->displayFirst to:self->displayFirst + count];
-    });
-}
-
-- (IBAction)doPinchAudio:(UISwipeGestureRecognizer *)sender {
+- (IBAction)doPinchAudio:(UIPinchGestureRecognizer *)sender {
     if ([sender numberOfTouches] < 2)
         return;
     CGPoint touchLeft = [sender locationOfTouch:0 inView:sender.view];
@@ -529,11 +538,41 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self displayRangeFrom:displayFirst length:displayCount];
 }
 
-- (void) spectrumChanged {
+- (void) spectrumChanged:(CGSize) newSize {
+    //    NSData *spectrumData = [audioClip spectrumPixelDataForSize:spectrumViewSize];
     NSData *spectrumData = [audioClip spectrumPixelDataForSize:spectrumViewSize];
     dispatch_async(dispatch_get_main_queue(), ^(void) {
         [self->spectrumView displayPixels: spectrumData];
     });
+}
+
+- (IBAction)doPinchSpectrum:(UIPinchGestureRecognizer *)sender {
+    if ([sender numberOfTouches] < 2)
+        return;
+}
+
+- (IBAction)doPanSpectrum:(UIPanGestureRecognizer *)sender {
+    CGPoint touch = [sender locationOfTouch:0 inView:sender.view];
+    switch (sender.state) {
+        case UIGestureRecognizerStateBegan:
+            startPanX = touch.x;
+            startPan = displayFirst;
+            break;
+        case UIGestureRecognizerStateChanged:
+        case UIGestureRecognizerStateEnded: {
+            CGFloat samplesPerPixel = displayCount/waveView.graphWidth;
+            CGFloat dx = startPanX - touch.x;
+            displayFirst = startPan + dx*samplesPerPixel;
+            if (displayFirst < 0)
+                displayFirst = 0;
+            if (displayFirst + displayCount > audioClip.sampleCount)
+                displayFirst = audioClip.sampleCount - displayCount;
+            [self displayRangeFrom:displayFirst length:displayCount];
+            break;
+        }
+        default:
+            ;
+    }
 }
 
 - (void) mikeBufferFull {

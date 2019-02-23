@@ -15,19 +15,27 @@
 // reallocations.
 
 #define MIKE_BUF_SIZE_SECONDS   (60*20)
-#define MAX_SPECTRAL_BLOCKS     (3000)
+#define MAX_SPECTRAL_BLOCKS     (2000)
+#define MAX_DB_BLOCKS           (2000)
 
 #define FFT_LEN     8192
 
 typedef struct FFTBlock {
     float raw[FFT_LEN/2 + 1];
-    float DB[FFT_LEN/2 + 1];
-   float min, max;
+    float min, max;
 } FFTBlock;
 
-static float hannFilter[FFT_LEN];
+typedef struct DBBlock {
+    float DB[FFT_LEN/2 + 1];
+    float min, max;
+} DBBlock;
+
+size_t DBsAlloced = 0;
 
 static FFTBlock *blocks[MAX_SPECTRAL_BLOCKS];
+static DBBlock *DBblocks[MAX_DB_BLOCKS];
+
+static float hannFilter[FFT_LEN];
 
 @interface AudioClip ()
 
@@ -193,17 +201,14 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     }
     sampleCount += newCount;
     [caller audioArrivedFromMike];
-    if ([self updateAudioSpectrumData])
-        [caller spectrumChanged];
+    if ([self updateAudioSpectrumData]) {
+        [caller spectrumChanged:CGSizeMake(sampleCount, FFT_LEN/2 + 1)];
+    }
 }
 
 // add new data to audio spectrum
 
 - (BOOL) updateAudioSpectrumData {
-    float sumFFT[FFT_LEN/2];
-    float zero = 0;
-    vDSP_vfill(&zero, sumFFT, 1, FFT_LEN/2);
-
     float t = (float)sampleCount;
     // nch = 1;
  //   size_t fs = sampleRate;
@@ -232,7 +237,9 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     size_t slen = FFT_LEN/2;
     size_t ftop = slen + 1;
     
-    for (size_t i = blockCount; i < nblk; i++) {
+    size_t blockStart = blockCount;
+    
+    for (size_t i = blockStart; i < nblk; i++) {
         if (blocks[i] == 0) {
             FFTBlock *b = calloc(ftop, sizeof(FFTBlock));
             assert(b);
@@ -266,7 +273,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         return NO;
     }
 
-    for (size_t s=0; s<blockCount; s++) {
+    for (size_t s=blockStart; s<blockCount; s++) {
         float t[FFT_LEN], filtered[FFT_LEN];
         vDSP_vflt16(&samples[s*slen], 1, t, 1, FFT_LEN);
         vDSP_vmul(t, 1, hannFilter, 1, filtered, 1, FFT_LEN);
@@ -293,15 +300,27 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 SpectrumPixel *pixelBuf = 0;
 size_t pixelBufSize = 0;
 
+- (NSData *) spectrumPixelData {
+    return [self spectrumPixelDataForSize:CGSizeMake(sampleCount, FFT_LEN/2 + 1)];
+}
+
 - (NSData *) spectrumPixelDataForSize:(CGSize) size {
-    size_t right = blockCount;
-    int left = right - size.width;
+    size_t rightBlock = blockCount - 1;     // we display the right side of the data, for now
+    int leftBlock = rightBlock - size.width;
     
-    if (left < 0)
-        left = 0;
+    if (leftBlock < 0)
+        leftBlock = 0;
+    
+    if (DBsAlloced < size.width) {
+        assert(size.width <= MAX_DB_BLOCKS);
+        for (size_t d=0; d<size.width; d++)
+            if (!DBblocks[d])
+                DBblocks[d] = (DBBlock *) malloc(sizeof(DBBlock));
+        DBsAlloced = size.width;
+    }
     
     float max = FLT_MIN;
-    for (size_t s=0; s<blockCount; s++) {
+    for (size_t s=leftBlock; s<rightBlock; s++) {
         FFTBlock *block = blocks[s];
         max = MAX(max, block->max);
     }
@@ -312,17 +331,19 @@ size_t pixelBufSize = 0;
 
     // relative DB computation
     max += 0.0001;  // no div 0 please
-    for (size_t s=left; s<right; s++) {
+    for (size_t b=0; b<size.width; b++) {
+        size_t s = b + leftBlock;
         FFTBlock *block = blocks[s];
-        vDSP_vsdiv(block->raw, 1, &max, block->DB, 1, slen);     // R = R/max;
+        DBBlock *DBb = DBblocks[b];
+        vDSP_vsdiv(block->raw, 1, &max, DBb->DB, 1, slen);     // R = R/max;
         float sm = sqrt(0.0000000001);            // limit lower end
-        vDSP_vsadd(block->DB, 1, &sm, block->DB, 1, slen);      // R = R + tiny
+        vDSP_vsadd(DBb->DB, 1, &sm, DBb->DB, 1, slen);      // R = R + tiny
         float one = 1.0;
-        vDSP_vdbcon(block->DB, 1, &one, block->DB, 1, slen, 1);    // compute log10 db
+        vDSP_vdbcon(DBb->DB, 1, &one, DBb->DB, 1, slen, 1);    // compute log10 db
         float min, max;
-        vDSP_maxv(block->DB, 1, &max, slen);
+        vDSP_maxv(DBb->DB, 1, &max, slen);
         maxDB = MAX(maxDB, max);
-        vDSP_minv(block->DB, 1, &min, slen);
+        vDSP_minv(DBb->DB, 1, &min, slen);
         minDB = MIN(minDB, min);
     }
     
@@ -335,14 +356,13 @@ size_t pixelBufSize = 0;
         assert(pixelBuf);
     }
     float range = maxDB - minDB;
-    NSLog(@"pixelbuf = %p, size %zu", pixelBuf, pixelBufSize);
     for (size_t y=0; y<size.height; y++) {
         size_t pi = (size.height - y - 1) * size.width; // y is upside down
         for (size_t x=0; x<size.width; x++) {
-            if (x < left || x >= right)
+            if (x < leftBlock || x >= rightBlock)
                 pixelBuf[pi++] = BLACK;
             else {
-                float db = blocks[x]->DB[y];
+                float db = DBblocks[x-leftBlock]->DB[y];
                 pixelBuf[pi++] = floor(((db - minDB)/range)*SPECTRUM_MAX_PIXEL);
             }
         }
@@ -365,66 +385,5 @@ size_t pixelBufSize = 0;
         if (blocks[i])
             free(blocks[i]);
 }
-
-
-#ifdef notdef
-
-- (void) newAudioData: (NSData *)buffer {
-    size_t nSamples = [buffer length]/sizeof(DEFAULT_SAMPLE_TYPE);
-    if (amp.len + nSamples > amp.alloc) {
-        // amp buffer is full.  If we are paused for analysis,
-        // drop the data, so we don't move the buffer, else
-        // forget a chunk, and continue
-        if (paused) {
-            overflow++;
-        } else {
-            size_t sToForget = amp.alloc*AMP_REDUCE_PCT/100.0;
-            if (sToForget > amp.len)    // should never happen, but ok
-                sToForget = amp.len;
-            NSLog(@"shift, @%zu: forget %zu from %zu",
-                  ampStartSampleNumber, sToForget, amp.len);
-            memmove(&AMP[0], &AMP[sToForget], sizeof(AMP[0])*(amp.len - sToForget));
-            amp.len -= sToForget;
-            ampStartSampleNumber += sToForget;
-        }
-    }
-    
-    short *raw = (short *)[buffer bytes];
-    size_t i;
-    for (i=0; i<nSamples && amp.len + i < amp.alloc; i++) {
-        ushort a = abs(raw[i]);
-        if (a > amp.maximum)
-            amp.maximum = a;
-        if (a < amp.minimum)
-            amp.minimum = a;
-        AMP[amp.len++] = a;
-    }
-    
-    long ampStart = amp.len - msToSamples(srcGraphWidthMs);
-    long sourceLen = amp.len - ampStart;
-    if (ampStart < 0)
-        ampStart = 0;
-    [sourceView xRangeFrom:sToMs(ampStart + ampStartSampleNumber)
-                        to:sToMs(ampStart + sourceLen + ampStartSampleNumber)];
-    [sourceView plotClipsFrom: ampStart width:sourceLen];
-    [self setNeedsDisplay];
-    busy = NO;
-    
-    [self processSample];
-}
-
-- (void) processSample {
-    long processLen = msToSamples(procGraphWidthMs);
-    long processStart = amp.len - processLen;
-    if (processStart < 0) {
-        processLen += processStart;
-        processStart = 0;
-    }
-    [self processSampleFrom: processStart length:processLen];
-    [processedView xRangeFrom:sToMs(processStart + ampStartSampleNumber)
-                           to:sToMs(processStart + ampStartSampleNumber + processLen)];
-    [processedView plotClipsFrom:0 width:processLen];
-}
-#endif
 
 @end
