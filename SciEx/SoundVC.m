@@ -185,14 +185,23 @@ typedef enum {
                     initWithFrame:CGRectMake(0, 0, LATER, FFT_H)];
     spectrumView.layer.borderWidth = 1;
     spectrumView.layer.borderColor = [UIColor redColor].CGColor;
+    spectrumView.userInteractionEnabled = YES;
+    
     UIPinchGestureRecognizer *pinchSpectrum = [[UIPinchGestureRecognizer alloc]
                                        initWithTarget:self
                                        action:@selector(doPinchSpectrum:)];
     [spectrumView addGestureRecognizer:pinchSpectrum];
+    
     UIPanGestureRecognizer *panSpectrum = [[UIPanGestureRecognizer alloc]
                                    initWithTarget:self
                                    action:@selector(doPanSpectrum:)];
     [spectrumView addGestureRecognizer:panSpectrum];
+    
+    UITapGestureRecognizer *tapSpectrum = [[UITapGestureRecognizer alloc]
+                                           initWithTarget:self
+                                           action:@selector(doTapSpectrum:)];
+    [spectrumView addGestureRecognizer:tapSpectrum];
+
     [containerView addSubview:spectrumView];
 
     waveView = [[WaveView alloc]
@@ -549,6 +558,10 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 - (IBAction)doPinchSpectrum:(UIPinchGestureRecognizer *)sender {
     if ([sender numberOfTouches] < 2)
         return;
+}
+
+- (IBAction)doTapSpectrum:(UITapGestureRecognizer *)sender {
+    [self doMike:nil];
 }
 
 - (IBAction)doPanSpectrum:(UIPanGestureRecognizer *)sender {
