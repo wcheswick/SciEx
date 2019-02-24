@@ -59,7 +59,8 @@
 
 - (NSData *) spectrumPixelDataForSize:(CGSize) size
                               options:(SpectrumOptions *)spectrumOptions
-                           leftBlock:(size_t)leftBlock;
+                            leftBlock:(size_t)leftBlock
+                               startX:(int *)startX;
 
 - (void) close;
 

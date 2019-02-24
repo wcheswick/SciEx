@@ -12,6 +12,7 @@
 #import "AudioClip.h"
 #import "WaveView.h"
 #import "SpectrumView.h"
+#import "SpectrumGridView.h"
 #import "SpectrumOptions.h"
 #import "XAxisView.h"
 
@@ -36,6 +37,7 @@ typedef enum {
 @property (nonatomic, strong)   UIToolbar *playControlBar;
 @property (nonatomic, strong)   UISegmentedControl *selectInput;
 @property (nonatomic, strong)   SpectrumView *spectrumView;
+@property (nonatomic, strong)   SpectrumGridView *spectrumGridView;
 @property (assign)              CGSize spectrumViewSize;
 @property (nonatomic, strong)   WaveView *waveView;
 @property (nonatomic, strong)   XAxisView *xAxisView;
@@ -51,11 +53,12 @@ typedef enum {
 
 // for pinch processing
 
-@property (assign)              CGPoint startLeftTouch, startRightTouch;
+@property (assign)              CGPoint startTouch0, startTouch1;
 @property (assign)              long startStart, startCount, startPan;
 @property (assign)              CGFloat startPanX;
 
-@property (nonatomic, strong)   SpectrumOptions *spectrumOptions;
+@property (nonatomic, strong)   SpectrumOptions *spectrumOptions, *gestureStartSpectrumOptions;
+
 @end
 
 @implementation SoundVC
@@ -64,7 +67,7 @@ typedef enum {
 @synthesize sampleTableView;
 @synthesize controlsView, selectInput, playControlBar;
 @synthesize mikeButton;
-@synthesize spectrumView;
+@synthesize spectrumView, spectrumGridView;
 @synthesize spectrumViewSize;
 @synthesize waveView;
 @synthesize xAxisView;
@@ -76,9 +79,9 @@ typedef enum {
 @synthesize audioClip;
 
 @synthesize displayFirst, displayCount;
-@synthesize startLeftTouch, startRightTouch;
+@synthesize startTouch0, startTouch1;
 @synthesize startStart, startCount, startPan, startPanX;
-@synthesize spectrumOptions;
+@synthesize spectrumOptions, gestureStartSpectrumOptions;
 
 - (id)init {
     self = [super init];
@@ -187,9 +190,13 @@ typedef enum {
     
     spectrumView = [[SpectrumView alloc]
                     initWithFrame:CGRectMake(0, 0, LATER, FFT_H)];
-    spectrumView.layer.borderWidth = 1;
-    spectrumView.layer.borderColor = [UIColor redColor].CGColor;
+    spectrumView.backgroundColor = [UIColor blackColor];
     spectrumView.userInteractionEnabled = YES;
+    
+    spectrumGridView = [[SpectrumGridView alloc]
+                        initWithFrame:spectrumView.frame];
+    spectrumGridView.opaque = NO;
+    [spectrumView addSubview:spectrumGridView];
     
     UIPinchGestureRecognizer *pinchSpectrum = [[UIPinchGestureRecognizer alloc]
                                        initWithTarget:self
@@ -335,10 +342,27 @@ typedef enum {
     [playControlBar setNeedsDisplay];
 }
 
+- (void) viewWillTransitionToSize:(CGSize)size
+        withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    
+    NSLog(@"***** transitition ***");
+    [self layoutViewsToSize:size];
+    
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+}
+
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    containerView.frame = self.view.frame;
+    [self layoutViewsToSize:self.view.frame.size];
+}
+
+- (void) layoutViewsToSize:(CGSize) newSize {
+    CGRect f = self.view.frame;
+    f.size = newSize;
+//    self.view.frame = f;
+    
+    containerView.frame = f;
     SET_VIEW_Y(containerView, BELOW(self.navigationController.navigationBar.frame));
     SET_VIEW_HEIGHT(containerView, containerView.frame.size.height - containerView.frame.origin.y);
     containerView.frame = CGRectInset(containerView.frame, INSET, INSET);
@@ -349,6 +373,7 @@ typedef enum {
     
     SET_VIEW_WIDTH(spectrumView, containerView.frame.size.width);
     spectrumViewSize = spectrumView.frame.size;   // a non-main thread size
+    spectrumGridView.frame = spectrumView.frame;
     SET_VIEW_WIDTH(waveView, containerView.frame.size.width);
     SET_VIEW_WIDTH(xAxisView, containerView.frame.size.width);
     SET_VIEW_WIDTH(playControlBar, containerView.frame.size.width);
@@ -522,15 +547,15 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     //    CGFloat center = (touchRight.x + touchLeft.x)/2.0;
     switch (sender.state) {
         case UIGestureRecognizerStateBegan:
-            startRightTouch = touchRight;
-            startLeftTouch = touchLeft;
+            startTouch0 = touchLeft;
+            startTouch1 = touchRight;
             startStart = displayFirst;
             startCount = displayCount;
             break;
         case UIGestureRecognizerStateChanged:
         case UIGestureRecognizerStateEnded: {
             CGFloat sep = touchRight.x - touchLeft.x;
-            float zoom = sep/(startRightTouch.x - startLeftTouch.x);
+            float zoom = sep/(startTouch1.x - startTouch0.x);
             //            NSLog(@"handleProcessedPinchGesture: @ %.0f zoom %.2f", center, zoom);
             displayCount = startCount/zoom;
             if (displayCount > audioClip.sampleCount)
@@ -555,10 +580,18 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     int leftBlock = audioClip.blockCount - spectrumViewSize.width/spectrumOptions.pixelsPerBlock;
     if (leftBlock < 0)
         leftBlock = 0;
+    int startX;
     NSData *spectrumData = [audioClip spectrumPixelDataForSize:spectrumViewSize
                                                        options:spectrumOptions
-                                                     leftBlock:leftBlock];
+                                                     leftBlock:leftBlock
+                                                        startX:&startX];
+    float timePerBlock = (float)FFT_LEN/(float)audioClip.sampleRate;
+    float startTime = leftBlock * timePerBlock;
+    float endTime = (spectrumViewSize.width - startX)*timePerBlock;
     dispatch_async(dispatch_get_main_queue(), ^(void) {
+        [self->spectrumGridView gridSettings:self->spectrumOptions
+                                   startTime:startTime endTime:endTime
+                                      startX:startX];
         [self->spectrumView displayPixels: spectrumData];
     });
 }
@@ -566,6 +599,38 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 - (IBAction)doPinchSpectrum:(UIPinchGestureRecognizer *)sender {
     if ([sender numberOfTouches] < 2)
         return;
+    CGPoint touch0 = [sender locationOfTouch:0 inView:sender.view];
+    CGPoint touch1 = [sender locationOfTouch:1 inView:sender.view];
+    //    CGFloat center = (touchRight.x + touchLeft.x)/2.0;
+    switch (sender.state) {
+        case UIGestureRecognizerStateBegan:
+            startTouch0 = touch0;
+            startTouch1 = touch1;
+            gestureStartSpectrumOptions = spectrumOptions;
+            startStart = displayFirst;
+            startCount = displayCount;
+            break;
+        case UIGestureRecognizerStateChanged:
+        case UIGestureRecognizerStateEnded: {
+            return;     // broken, disabled
+            float startDY = fabs(startTouch0.y - startTouch1.y);
+            float startDX = fabs(startTouch0.x - startTouch1.x);
+            float dx = fabs(touch0.x - touch1.x);
+            float dy = fabs(touch0.y - touch1.y);
+            float zoomX = dx/startDX;
+            assert(zoomX >= 0);
+            float zoomY = dy/startDY;
+            NSLog(@"  %.1f %.1f   %.1f %.1f", dx, zoomX, dy, zoomY);
+            size_t newPixelsPerBlock = floor((float)gestureStartSpectrumOptions.pixelsPerBlock * zoomX);
+            if (newPixelsPerBlock >= 1 && newPixelsPerBlock != spectrumOptions.pixelsPerBlock) {
+                NSLog(@"ppb: %ld -> %zu", (long)spectrumOptions.pixelsPerBlock, newPixelsPerBlock);
+                spectrumOptions.pixelsPerBlock = newPixelsPerBlock;
+                break;
+            }
+        default:
+            ;
+        }
+    }
 }
 
 - (IBAction)doTapSpectrum:(UITapGestureRecognizer *)sender {
@@ -573,6 +638,8 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 }
 
 - (IBAction)doPanSpectrum:(UIPanGestureRecognizer *)sender {
+    if ([sender numberOfTouches] < 1)
+        return;
     CGPoint touch = [sender locationOfTouch:0 inView:sender.view];
     switch (sender.state) {
         case UIGestureRecognizerStateBegan:

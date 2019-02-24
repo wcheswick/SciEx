@@ -25,6 +25,7 @@ typedef DEFAULT_SAMPLE_TYPE Sample;
 #define BYTE_TO_SAMPLE(b)   ((b)/sizeof(Sample))
 
 
+#define FFT_LEN     8192
 #define SpectrumPixel   uint8_t    // 0-255, use a colormap to color
 
 #define SPECTRUM_MAX_PIXEL  ((1<<(sizeof(SpectrumPixel)*8)) - 1)

@@ -39,6 +39,7 @@
 		FB52CA4E2203A7DE00E99FF1 /* VideoExhibitVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */; };
 		FB52CA512204C4E300E99FF1 /* PixelView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB52CA502204C4E300E99FF1 /* PixelView.m */; };
 		FB64BF1E2221FA6B00B06838 /* SpectrumOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = FB64BF1D2221FA6B00B06838 /* SpectrumOptions.m */; };
+		FB64BF212222DACF00B06838 /* SpectrumGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB64BF202222DACF00B06838 /* SpectrumGridView.m */; };
 		FB8F1FE52219A08A00A4A04C /* AudioClip.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8F1FE42219A08A00A4A04C /* AudioClip.m */; };
 		FB8F1FEC221DF5E700A4A04C /* SpectrumView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8F1FEA221DF5E600A4A04C /* SpectrumView.m */; };
 		FB8F1FEF221DF6EE00A4A04C /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB8F1FEE221DF6EE00A4A04C /* Accelerate.framework */; };
@@ -124,6 +125,8 @@
 		FB52CA502204C4E300E99FF1 /* PixelView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PixelView.m; sourceTree = "<group>"; };
 		FB64BF1C2221FA6B00B06838 /* SpectrumOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpectrumOptions.h; sourceTree = "<group>"; };
 		FB64BF1D2221FA6B00B06838 /* SpectrumOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SpectrumOptions.m; sourceTree = "<group>"; };
+		FB64BF1F2222DACF00B06838 /* SpectrumGridView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpectrumGridView.h; sourceTree = "<group>"; };
+		FB64BF202222DACF00B06838 /* SpectrumGridView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SpectrumGridView.m; sourceTree = "<group>"; };
 		FB8F1FE32219A08A00A4A04C /* AudioClip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioClip.h; sourceTree = "<group>"; };
 		FB8F1FE42219A08A00A4A04C /* AudioClip.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioClip.m; sourceTree = "<group>"; };
 		FB8F1FEA221DF5E600A4A04C /* SpectrumView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpectrumView.m; sourceTree = "<group>"; };
@@ -243,6 +246,8 @@
 				FBA89A6A2211ADAA00CCE74B /* WaveGraphView.m */,
 				FB8F1FEB221DF5E700A4A04C /* SpectrumView.h */,
 				FB8F1FEA221DF5E600A4A04C /* SpectrumView.m */,
+				FB64BF1F2222DACF00B06838 /* SpectrumGridView.h */,
+				FB64BF202222DACF00B06838 /* SpectrumGridView.m */,
 				FBA89A652211ACF500CCE74B /* XAxisView.h */,
 				FBA89A622211ACF500CCE74B /* XAxisView.m */,
 				FBA89A642211ACF500CCE74B /* YAxisView.h */,
@@ -498,6 +503,7 @@
 				FB52C9E92203476C00E99FF1 /* MainVC.m in Sources */,
 				FB52CA482203602000E99FF1 /* DDVC.m in Sources */,
 				FB52C9ED22034F7900E99FF1 /* SoundVC.m in Sources */,
+				FB64BF212222DACF00B06838 /* SpectrumGridView.m in Sources */,
 				FB8F1FEC221DF5E700A4A04C /* SpectrumView.m in Sources */,
 				FB52CA4B2203620300E99FF1 /* ExhibitVC.m in Sources */,
 				FBA89A612210CB1D00CCE74B /* dreg.m in Sources */,
@@ -648,6 +654,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HK64XTSZFA;
 				INFOPLIST_FILE = SciEx/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -665,6 +672,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HK64XTSZFA;
 				INFOPLIST_FILE = SciEx/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

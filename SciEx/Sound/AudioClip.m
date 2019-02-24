@@ -18,8 +18,6 @@
 #define MAX_SPECTRAL_BLOCKS     (2000)
 #define MAX_DB_BLOCKS           (2000)
 
-#define FFT_LEN     8192
-
 typedef struct FFTBlock {
     float raw[FFT_LEN/2 + 1];
     float min, max;
@@ -302,14 +300,15 @@ size_t pixelBufSize = 0;
 
 - (NSData *) spectrumPixelDataForSize:(CGSize) size
                               options:(SpectrumOptions *)spectrumOptions
-                             leftBlock:(size_t)leftBlock {
+                             leftBlock:(size_t)leftBlock
+                               startX:(int *)startX {
     size_t rightBlock = leftBlock + size.width/spectrumOptions.pixelsPerBlock;
     
     if (rightBlock > blockCount)
         rightBlock = blockCount;
     
-    int startX = size.width - ((rightBlock - leftBlock)*spectrumOptions.pixelsPerBlock) - 1;
-    assert(startX >= 0 && startX < size.width);
+    *startX = size.width - ((rightBlock - leftBlock)*spectrumOptions.pixelsPerBlock) - 1;
+    assert(*startX >= 0 && *startX < size.width);
     
     for (size_t d=leftBlock; d<rightBlock; d++)
         if (!DBblocks[d])
@@ -360,7 +359,6 @@ size_t pixelBufSize = 0;
     
     float range = maxDB - minDB;
     SpectrumPixel p;
-    NSLog(@"DB min=%.1f max=%.1f range=%.1f", minDB, maxDB, range);
     
 #define BLACK   0
     memset(pixelBuf, BLACK, pixelBufSize);
@@ -368,7 +366,7 @@ size_t pixelBufSize = 0;
     for (size_t y=0; y<size.height; y++) {
         // start of the y row.  NB: y is upside down
         size_t pyr = (size.height - y - 1) * size.width;
-        size_t pxp = pyr + startX*sizeof(SpectrumPixel);
+        size_t pxp = pyr + *startX*sizeof(SpectrumPixel);
         for (size_t b=leftBlock; b<rightBlock; b++) {
             float db = DBblocks[b]->DB[y];
             p = floor(((db - minDB)/range)*SPECTRUM_MAX_PIXEL);

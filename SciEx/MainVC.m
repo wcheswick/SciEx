@@ -21,6 +21,7 @@
 @property (nonatomic, strong)   UICollectionViewFlowLayout *layout;
 
 @property (nonatomic, strong)   ExhibitVC *exhibitVC;
+@property (nonatomic, strong)   UIViewController *subVC;
 
 @property (nonatomic, strong)   NSArray *exhibitList;
 
@@ -31,7 +32,7 @@
 static NSString * const reuseIdentifier = @"Cell";
 
 @synthesize collectionView, layout;
-@synthesize exhibitVC;
+@synthesize exhibitVC, subVC;
 
 @synthesize exhibitList;
 
@@ -80,6 +81,18 @@ static NSString * const reuseIdentifier = @"Cell";
     [self.view addSubview:collectionView];
     
     self.view.backgroundColor = [UIColor whiteColor];
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    subVC = nil;
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    
+    [self.presentedViewController viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 }
 
 /*
@@ -136,10 +149,11 @@ static NSString * const reuseIdentifier = @"Cell";
 
 - (void)collectionView:(UICollectionView *)collectionView
 didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    ExhibitVC *exhibitView = (ExhibitVC *)[exhibitList objectAtIndex:indexPath.row];
-    NSLog(@"selected item %ld, '%@'", (long)indexPath.row, exhibitView.exhibitTitle);
+    ExhibitVC *exhibitVC = (ExhibitVC *)[exhibitList objectAtIndex:indexPath.row];
+    NSLog(@"selected item %ld, '%@'", (long)indexPath.row, exhibitVC.exhibitTitle);
+    subVC = exhibitVC;
     [self.navigationController
-     pushViewController:exhibitView
+     pushViewController:exhibitVC
      animated: YES];
 }
 
