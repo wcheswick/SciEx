@@ -10,6 +10,7 @@
 #import <AVFoundation/AVFoundation.h>
 
 #import "AudioDefines.h"
+#import "SpectrumOptions.h"
 
 #define SAMPLES_TO_MS(s)    (1000.0*(((float)s)/(float)sampleRate))
 
@@ -23,7 +24,7 @@
 @protocol MikeProtocol <NSObject>
 
 - (void) audioArrivedFromMike;
-- (void) spectrumChanged:(CGSize) newSize;
+- (void) spectrumChanged;
 - (void) mikeBufferFull;
 
 @end
@@ -34,6 +35,7 @@
     size_t sampleRate;      // samples per second
     size_t samplesAlloced;
     size_t sampleCount;
+    size_t blockCount;
     
     BOOL isMike, mikeIsOn;
     __unsafe_unretained id<MikeProtocol> caller;
@@ -43,6 +45,7 @@
 @property (assign)  size_t rawSampleSize;
 @property (assign)  size_t sampleRate;
 @property (assign)  size_t sampleCount;
+@property (assign)  size_t blockCount;
 
 @property (assign)  BOOL isMike, mikeIsOn;
 @property (assign)  __unsafe_unretained id<MikeProtocol> caller;
@@ -54,8 +57,9 @@
 - (void) startMike;
 - (void) stopMike;
 
-- (NSData *) spectrumPixelDataForSize:(CGSize) size;
-- (NSData *) spectrumPixelData;
+- (NSData *) spectrumPixelDataForSize:(CGSize) size
+                              options:(SpectrumOptions *)spectrumOptions
+                           leftBlock:(size_t)leftBlock;
 
 - (void) close;
 

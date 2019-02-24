@@ -45,7 +45,7 @@ static float hannFilter[FFT_LEN];
 @property (nonatomic, strong)   AVCaptureDeviceInput *audioInput;
 @property (nonatomic, strong)   AVCaptureAudioDataOutput *audioDataOutput;
 
-@property (assign)              size_t blockCount, blocksAlloc;
+@property (assign)              size_t blocksAlloc;
 
 @end
 
@@ -202,7 +202,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     sampleCount += newCount;
     [caller audioArrivedFromMike];
     if ([self updateAudioSpectrumData]) {
-        [caller spectrumChanged:CGSizeMake(sampleCount, FFT_LEN/2 + 1)];
+        [caller spectrumChanged];
     }
 }
 
@@ -300,25 +300,21 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 SpectrumPixel *pixelBuf = 0;
 size_t pixelBufSize = 0;
 
-- (NSData *) spectrumPixelData {
-    return [self spectrumPixelDataForSize:CGSizeMake(sampleCount, FFT_LEN/2 + 1)];
-}
+- (NSData *) spectrumPixelDataForSize:(CGSize) size
+                              options:(SpectrumOptions *)spectrumOptions
+                             leftBlock:(size_t)leftBlock {
+    size_t rightBlock = leftBlock + size.width/spectrumOptions.pixelsPerBlock;
+    
+    if (rightBlock > blockCount)
+        rightBlock = blockCount;
+    
+    int startX = size.width - ((rightBlock - leftBlock)*spectrumOptions.pixelsPerBlock) - 1;
+    assert(startX >= 0 && startX < size.width);
+    
+    for (size_t d=leftBlock; d<rightBlock; d++)
+        if (!DBblocks[d])
+            DBblocks[d] = (DBBlock *) malloc(sizeof(DBBlock));
 
-- (NSData *) spectrumPixelDataForSize:(CGSize) size {
-    size_t rightBlock = blockCount - 1;     // we display the right side of the data, for now
-    int leftBlock = rightBlock - size.width;
-    
-    if (leftBlock < 0)
-        leftBlock = 0;
-    
-    if (DBsAlloced < size.width) {
-        assert(size.width <= MAX_DB_BLOCKS);
-        for (size_t d=0; d<size.width; d++)
-            if (!DBblocks[d])
-                DBblocks[d] = (DBBlock *) malloc(sizeof(DBBlock));
-        DBsAlloced = size.width;
-    }
-    
     float max = FLT_MIN;
     for (size_t s=leftBlock; s<rightBlock; s++) {
         FFTBlock *block = blocks[s];
@@ -331,9 +327,8 @@ size_t pixelBufSize = 0;
 
     // relative DB computation
     max += 0.0001;  // no div 0 please
-    for (size_t b=0; b<size.width; b++) {
-        size_t s = b + leftBlock;
-        FFTBlock *block = blocks[s];
+    for (size_t b=leftBlock; b<rightBlock; b++) {
+        FFTBlock *block = blocks[b];
         DBBlock *DBb = DBblocks[b];
         vDSP_vsdiv(block->raw, 1, &max, DBb->DB, 1, slen);     // R = R/max;
         float sm = sqrt(0.0000000001);            // limit lower end
@@ -342,12 +337,19 @@ size_t pixelBufSize = 0;
         vDSP_vdbcon(DBb->DB, 1, &one, DBb->DB, 1, slen, 1);    // compute log10 db
         float min, max;
         vDSP_maxv(DBb->DB, 1, &max, slen);
+//        for (int i=0; i<slen; i++)
+//            NSLog(@"    %4d %5.1f", i, DBb->DB[i]);
         maxDB = MAX(maxDB, max);
         vDSP_minv(DBb->DB, 1, &min, slen);
         minDB = MIN(minDB, min);
     }
     
-#define BLACK   0
+    size_t freqIncr = sampleRate/slen;
+    size_t freqLow = spectrumOptions.minFreq/freqIncr;
+    size_t freqHigh = spectrumOptions.maxFreq/freqIncr;
+    size_t freqCount = freqHigh - freqLow;
+    size_t pixelsPerFreq = size.height/freqCount;
+    
     size_t bufSize = size.width * size.height * sizeof(SpectrumPixel);
     if (bufSize != pixelBufSize) {
         NSLog(@"new pixel buf size, from %zu to %zu", pixelBufSize, bufSize);
@@ -355,22 +357,31 @@ size_t pixelBufSize = 0;
         pixelBuf = (SpectrumPixel *)realloc(pixelBuf, pixelBufSize);
         assert(pixelBuf);
     }
+    
     float range = maxDB - minDB;
+    SpectrumPixel p;
+    NSLog(@"DB min=%.1f max=%.1f range=%.1f", minDB, maxDB, range);
+    
+#define BLACK   0
+    memset(pixelBuf, BLACK, pixelBufSize);
+    
     for (size_t y=0; y<size.height; y++) {
-        size_t pi = (size.height - y - 1) * size.width; // y is upside down
-        for (size_t x=0; x<size.width; x++) {
-            if (x < leftBlock || x >= rightBlock)
-                pixelBuf[pi++] = BLACK;
-            else {
-                float db = DBblocks[x-leftBlock]->DB[y];
-                pixelBuf[pi++] = floor(((db - minDB)/range)*SPECTRUM_MAX_PIXEL);
-            }
+        // start of the y row.  NB: y is upside down
+        size_t pyr = (size.height - y - 1) * size.width;
+        size_t pxp = pyr + startX*sizeof(SpectrumPixel);
+        for (size_t b=leftBlock; b<rightBlock; b++) {
+            float db = DBblocks[b]->DB[y];
+            p = floor(((db - minDB)/range)*SPECTRUM_MAX_PIXEL);
+            for (int i=0; i<spectrumOptions.pixelsPerBlock; i++)
+                pixelBuf[pxp++] = p;
+        }
+        for (int j=1; j<pixelsPerFreq; j++) {
+            y++;
+            size_t npyr = (size.height - y - 1) * size.width;
+            memcpy(&pixelBuf[npyr], &pixelBuf[pyr], size.width*sizeof(SpectrumPixel));
         }
     }
-//    NSData *pixelData = [NSData dataWithBytes:pixelBuf length:bufSize];
- //   assert(pixelData);
     NSData *pixelData = [NSData dataWithBytesNoCopy:pixelBuf length:bufSize freeWhenDone:NO];
-//    NSLog(@"pixel data: at %p, %zu", pixelData.bytes, pixelData.length);
     return pixelData;
 }
 

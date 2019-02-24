@@ -12,6 +12,7 @@
 #import "AudioClip.h"
 #import "WaveView.h"
 #import "SpectrumView.h"
+#import "SpectrumOptions.h"
 #import "XAxisView.h"
 
 // keys used by dictionaries in soundClipSections:
@@ -54,6 +55,7 @@ typedef enum {
 @property (assign)              long startStart, startCount, startPan;
 @property (assign)              CGFloat startPanX;
 
+@property (nonatomic, strong)   SpectrumOptions *spectrumOptions;
 @end
 
 @implementation SoundVC
@@ -76,6 +78,7 @@ typedef enum {
 @synthesize displayFirst, displayCount;
 @synthesize startLeftTouch, startRightTouch;
 @synthesize startStart, startCount, startPan, startPanX;
+@synthesize spectrumOptions;
 
 - (id)init {
     self = [super init];
@@ -88,6 +91,7 @@ typedef enum {
         displayCount = 0;
         audioClip = nil;
         currentClipFile = nil;
+        spectrumOptions = [[SpectrumOptions alloc] init];
         [self readSoundList];
     }
     return self;
@@ -547,9 +551,13 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [self displayRangeFrom:displayFirst length:displayCount];
 }
 
-- (void) spectrumChanged:(CGSize) newSize {
-    //    NSData *spectrumData = [audioClip spectrumPixelDataForSize:spectrumViewSize];
-    NSData *spectrumData = [audioClip spectrumPixelDataForSize:spectrumViewSize];
+- (void) spectrumChanged {
+    int leftBlock = audioClip.blockCount - spectrumViewSize.width/spectrumOptions.pixelsPerBlock;
+    if (leftBlock < 0)
+        leftBlock = 0;
+    NSData *spectrumData = [audioClip spectrumPixelDataForSize:spectrumViewSize
+                                                       options:spectrumOptions
+                                                     leftBlock:leftBlock];
     dispatch_async(dispatch_get_main_queue(), ^(void) {
         [self->spectrumView displayPixels: spectrumData];
     });
