@@ -211,7 +211,7 @@ static float hannFilter[FFT_LEN];
 }
 
 - (BOOL) samplesOK {
-    const Sample *bb = (const Sample *)self.mikeClip.mutableBytes;
+    const Sample *bb = (const Sample *)self.mikeClip.bytes;
     assert(self.sampleCount == self.mikeClip.length/sizeof(Sample));
     for (size_t i=0; i<self.sampleCount; i++) {
         Sample a = self.samples[i];

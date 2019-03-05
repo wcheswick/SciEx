@@ -37,7 +37,7 @@
 }
 
 - (BOOL) samplesOK {
-    const Sample *bb = (const Sample *)audioClip.mikeClip.mutableBytes;
+    const Sample *bb = (const Sample *)audioClip.mikeClip.bytes;
     assert(audioClip.sampleCount == audioClip.mikeClip.length/sizeof(Sample));
     for (size_t i=0; i<audioClip.sampleCount; i++) {
         Sample a = audioClip.samples[i];
