@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 #import "AudioDefines.h"
 #import "SpectrumOptions.h"
@@ -30,6 +31,7 @@
 @end
 
 @interface AudioClip : NSObject <AVCaptureAudioDataOutputSampleBufferDelegate> {
+    NSMutableData *mikeClip;
     Sample *samples;
     size_t rawSampleSize;
     size_t sampleRate;      // samples per second
@@ -41,6 +43,7 @@
     __unsafe_unretained id<MikeProtocol> caller;
 }
 
+@property (atomic, strong)  NSMutableData *mikeClip;
 @property (assign)  Sample *samples;
 @property (assign)  size_t rawSampleSize;
 @property (assign)  size_t sampleRate;

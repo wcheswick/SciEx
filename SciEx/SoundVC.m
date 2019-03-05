@@ -6,6 +6,11 @@
 //  Copyright © 2019 Cheswick.com. All rights reserved.
 //
 
+#import <AVFoundation/AVFoundation.h>
+#import <AudioToolbox/AudioToolbox.h>
+
+//     AVAudioPlayer *audioPlayer = [[AVAudioPlayer alloc] initWithData:clipData error:&error]
+
 #import "Defines.h"
 #import "OrderedDictionary.h"
 #import "SoundVC.h"
@@ -260,6 +265,7 @@ typedef enum {
     [selectInput addTarget:self
                     action:@selector(changeInput:)
           forControlEvents:UIControlEventValueChanged];
+    selectInput.selectedSegmentIndex = MikeSegment;
     [controlsView addSubview:selectInput];
 
     mikeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
@@ -290,6 +296,38 @@ typedef enum {
 
     [self.view addSubview:containerView];
     self.view.backgroundColor = [UIColor whiteColor];
+    
+    audioClip = [[AudioClip alloc] init];
+    selectInput.enabled = NO;
+    if (mikeButton.enabled) {   // try to setup mike
+        NSString *err = [audioClip initializeMikeForTarget:self];
+        if (!err) {
+            selectInput.selectedSegmentIndex = MikeSegment;
+            selectInput.enabled = YES;
+            [waveView useClip:audioClip];
+            xAxisView.audioClip = audioClip;
+        } else
+            NSLog(@"mike initialization error %@", err);
+    }
+    if (!selectInput.enabled) {
+        selectInput.selectedSegmentIndex = FileSegment;
+        selectInput.enabled = YES;
+        currentClipFile = [[NSUserDefaults standardUserDefaults] stringForKey:kLastClipChosen];
+        if (currentClipFile) {
+            [self selectClip:currentClipFile];
+        }
+    }
+}
+
+- (void) selectClip:(NSString *)clipFile {
+    NSString *err = [audioClip initializeFromPath:currentClipFile];
+    if (err) {
+        NSLog(@"path source initialization error %@", err);
+    }
+    [waveView useClip:audioClip];
+    xAxisView.audioClip = audioClip;
+    [[NSUserDefaults standardUserDefaults] setObject:clipFile forKey:kLastClipChosen];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void) adjustPlayControlBar {
@@ -380,33 +418,6 @@ typedef enum {
     SET_VIEW_WIDTH(controlsView, containerView.frame.size.width);
     SET_VIEW_WIDTH(sampleTableView, containerView.frame.size.width);
     [sampleTableView reloadData];
-    
-    audioClip = [[AudioClip alloc] init];
-    selectInput.enabled = NO;
-    if (mikeButton.enabled) {   // try to setup mike
-        NSString *err = [audioClip initializeMikeForTarget:self];
-        if (!err) {
-            selectInput.selectedSegmentIndex = MikeSegment;
-            selectInput.enabled = YES;
-            [waveView useClip:audioClip];
-            xAxisView.audioClip = audioClip;
-        } else
-            NSLog(@"mike initialization error %@", err);
-    }
-    if (!selectInput.enabled) {
-        selectInput.selectedSegmentIndex = FileSegment;
-        selectInput.enabled = YES;
-        currentClipFile = [[NSUserDefaults standardUserDefaults] stringForKey:kLastClipChosen];
-        if (currentClipFile) {
-            NSString *err = [audioClip initializeFromPath:currentClipFile];
-            if (err)
-                NSLog(@"path source initialization error %@", err);
-            else {
-                [waveView useClip:audioClip];
-                xAxisView.audioClip = audioClip;
-            }
-        }
-    }
     [selectInput setNeedsDisplay];
     
     displayCount = 5*audioClip.sampleRate;
@@ -440,7 +451,6 @@ typedef enum {
             mikeButton.enabled = YES;
         }
     } else {
-        NSLog(@"XXXXXXX switch to file sample");
         mikeButton.enabled = NO;
         sampleTableView.userInteractionEnabled = YES;
     }
@@ -498,7 +508,11 @@ titleForHeaderInSection:(NSInteger)section {
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSArray *samplesList = [soundClipSections objectAtIndex:indexPath.section];
     NSDictionary *sample = [samplesList objectAtIndex:indexPath.row];
+    NSString *clipFile = [sample objectForKey:kFileName];
     NSLog(@"selected sample file %@", [sample objectForKey:kFileName]);
+    [self selectClip:clipFile];
+    
+//    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
 }
 
 - (void) displayRangeFrom:(size_t)first length:(size_t)count {

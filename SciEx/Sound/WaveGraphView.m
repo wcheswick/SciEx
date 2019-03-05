@@ -36,12 +36,25 @@
     return self;
 }
 
+- (BOOL) samplesOK {
+    const Sample *bb = (const Sample *)audioClip.mikeClip.mutableBytes;
+    assert(audioClip.sampleCount == audioClip.mikeClip.length/sizeof(Sample));
+    for (size_t i=0; i<audioClip.sampleCount; i++) {
+        Sample a = audioClip.samples[i];
+        Sample b = bb[i];
+        if (a != b) {
+            NSLog(@"oops, @ %zu: %04x != %04x", i, a, b);
+            return NO;
+        }
+    }
+    return YES;
+}
+
 - (void) showSamplesFrom:(size_t) startSample count:(size_t) nSamples {
     assert(audioClip);
     assert(audioClip.samples);
     firstDisplay = startSample;
     numberDisplayed = nSamples;
-    assert(startSample + nSamples <= audioClip.sampleCount);
     dispatch_async(dispatch_get_main_queue(), ^(void) {
         [self setNeedsDisplay];
     });

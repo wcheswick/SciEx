@@ -49,6 +49,7 @@ static float hannFilter[FFT_LEN];
 
 @implementation AudioClip
 
+@synthesize mikeClip;
 @synthesize sampleRate;
 @synthesize samples;
 @synthesize rawSampleSize;
@@ -70,6 +71,7 @@ static float hannFilter[FFT_LEN];
         caller = nil;
         isMike = mikeIsOn = NO;
         samples = nil;
+        mikeClip = nil;
         samplesAlloced = 0;
         sampleCount = 0;
         blockCount = 0;
@@ -87,6 +89,8 @@ static float hannFilter[FFT_LEN];
         samplesAlloced = 0;
         return @"Not enough memory for the microphone";
     }
+    mikeClip = [[NSMutableData alloc]
+                initWithCapacity:MIKE_BUF_SIZE_SECONDS*sampleRate*sizeof(Sample)];
     sampleCount = 0;
     [self setupFFT];
 
@@ -133,7 +137,34 @@ static float hannFilter[FFT_LEN];
     }
 }
 
-- (NSString *) initializeFromPath: (NSString *) path {
+- (NSString *) initializeFromPath: (NSString *) name {
+    NSString *clipPath = [[NSBundle mainBundle]
+                  pathForResource:name ofType:@"wav"];
+    if (clipPath == nil) {
+        NSLog(@"**** clip file missing: %@", name);
+        return @"**** clip file missing";
+    }
+    if (![[NSFileManager defaultManager] fileExistsAtPath:clipPath]) {
+        NSLog(@"**** Clip file missing: %@", name);
+        return @"**** Clip file missing";
+    }
+
+    NSError *error;
+    NSData *clipData = [NSData dataWithContentsOfFile:clipPath
+                                                options:NSDataReadingUncached
+                                                  error:&error];
+    if (clipData == nil) {
+        NSString *errMSG = [NSString stringWithFormat:@"clipData unavailable for source %@, %@",
+              name, [error localizedDescription]];
+        return errMSG;
+    }
+    
+    if (samples) {
+        free(samples);
+        samples = nil;
+    }
+
+    NSLog(@"clip length: %lu", (unsigned long)clipData.length);
     sampleRate = DEFAULT_SAMPLE_RATE;
     rawSampleSize = sizeof(RAW_SAMPLE_TYPE);
     samples = nil;
@@ -164,6 +195,36 @@ static float hannFilter[FFT_LEN];
 - (void) stopMike {
     [captureSession stopRunning];
     mikeIsOn = NO;
+}
+
+- (NSString *) samplesDump:(NSString *) label samples:(const Sample *) s {
+    return [NSString stringWithFormat:@"%@  %04hx %04hx  %04hx %04hx  %04hx %04hx  %04hx %04hx  %04hx %04hx",
+            label,
+            s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9]];
+}
+
+- (NSString *) hexDump:(NSString *) label bytes:(const u_char *) b {
+    return [NSString stringWithFormat:@"%@  %02x %02x  %02x %02x  %02x %02x  %02x %02x  %02x %02x %02x %02x  %02x %02x  %02x %02x  %02x %02x  %02x %02x",
+            label,
+            b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9],
+            b[10], b[11], b[12], b[13], b[14], b[15], b[16], b[17], b[18], b[19]];
+}
+
+- (BOOL) samplesOK {
+    const Sample *bb = (const Sample *)self.mikeClip.mutableBytes;
+    assert(self.sampleCount == self.mikeClip.length/sizeof(Sample));
+    for (size_t i=0; i<self.sampleCount; i++) {
+        Sample a = self.samples[i];
+        Sample b = bb[i];
+        if (a != b) {
+            NSLog(@"oops, @ %zu: %04x != %04x", i, a&0xffff, b&0xffff);
+            NSLog(@"# samples: %zu,   from %lu to %zu:", self.sampleCount, i-9, i);
+            NSLog(@"%@", [self samplesDump:@"samples" samples:&self.samples[i-9]]);
+            NSLog(@"%@", [self samplesDump:@"   data" samples:&bb[i-9]]);
+            return NO;
+        }
+    }
+    return YES;
 }
 
 - (void)captureOutput:(AVCaptureOutput *)output
@@ -197,7 +258,14 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         NSLog(@"sound block fetch error %d", (int)stat);
         return;
     }
+    [mikeClip appendBytes:&samples[sampleCount] length:incomingLength];
     sampleCount += newCount;
+#ifdef DEBUG
+    if (![self samplesOK]) {
+        NSLog(@"not ok");
+    }
+#endif
+
     [caller audioArrivedFromMike];
     if ([self updateAudioSpectrumData]) {
         [caller spectrumChanged];
