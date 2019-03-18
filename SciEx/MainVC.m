@@ -57,7 +57,6 @@ static NSString * const reuseIdentifier = @"Cell";
     self.title = @"Science exhibits";
     
 //    self.navigationController.navigationBar.hidden = YES;
-//    self.navigationController.toolbarHidden = YES;
 
     layout = [[UICollectionViewFlowLayout alloc] init];
     layout.sectionInset = UIEdgeInsetsMake(INSET, INSET, INSET, INSET);

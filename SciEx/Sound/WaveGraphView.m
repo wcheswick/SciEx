@@ -13,22 +13,23 @@
 @interface WaveGraphView ()
 
 @property (strong, nonatomic)   YAxisView *leftAxis;
-@property (assign)              size_t firstDisplay; // in samples, not bytes
-@property (assign)              size_t numberDisplayed; // in samples, not bytes
+@property (assign)              size_t samplesPerPixel;
+@property (assign)              size_t firstSample; // in samples, not bytes
 
 @end
 
 @implementation WaveGraphView
 
 @synthesize audioClip;
+@synthesize samplesPerPixel, firstSample;
+
 @synthesize leftAxis;
-@synthesize firstDisplay, numberDisplayed;
 
 - (id)initWithFrame:(CGRect) f {
     self = [super initWithFrame:f];
     if (self) {
-        firstDisplay = 0;
-        numberDisplayed = 0;
+        firstSample = 0;
+        samplesPerPixel = 1;
         self.layer.borderWidth = 0.5;
         self.layer.borderColor = [UIColor purpleColor].CGColor;
         self.layer.cornerRadius = 1.0;
@@ -50,11 +51,12 @@
     return YES;
 }
 
-- (void) showSamplesFrom:(size_t) startSample count:(size_t) nSamples {
+- (void) showSamplesFrom:(size_t) startSample spp:(size_t) spp {
     assert(audioClip);
     assert(audioClip.samples);
-    firstDisplay = startSample;
-    numberDisplayed = nSamples;
+    firstSample = startSample;
+    assert(firstSample >= 0 && firstSample < audioClip.sampleCount);
+    samplesPerPixel = spp;
     dispatch_async(dispatch_get_main_queue(), ^(void) {
         [self setNeedsDisplay];
     });
@@ -79,78 +81,44 @@
     CGContextSaveGState(context);
     CGContextSetFillColorWithColor(context, [UIColor whiteColor].CGColor);
     CGContextFillRect(context,self.bounds);
-    if (numberDisplayed == 0 || self.frame.size.width == 0) {
+    if (self.frame.size.width == 0) {
         CGContextRestoreGState(context);
         CGContextFlush(context);
         return;
     }
     
-    float samplesPerPixel = numberDisplayed/self.frame.size.width;
-    
     if (samplesPerPixel == 0) {
         NSLog(@"inconceivable, divide by zero");
     }
-    float compression, pixelsPerPoint;
-    
-    if (samplesPerPixel <= 1.0) {
-        compression = 1;
-        pixelsPerPoint = 1.0/samplesPerPixel;
-    } else {
-        compression = floor(samplesPerPixel) + 1;
-        pixelsPerPoint = self.frame.size.width/(self.frame.size.width/compression);
-    }
-    if (compression == 0) {
-        NSLog(@"Inconceivable, divide by zero");
-    }
-    
-    size_t standardCount = 0;
-    
-    float maximum = RAW_SAMPLE_MAX;
-//    float minimum = RAW_SAMPLE_MIN;
 
-    UIColor *color;
-    switch (standardCount++) {    // GNUPlot, anyone?  It will do for now
-        case 0:
-            color = [UIColor colorWithRed:0 green:0 blue:1 alpha:0.5];
-            break;
-        case 1:
-            color = [UIColor colorWithRed:.5 green:.5 blue:0 alpha:1];
-            break;
-        case 2:
-            color = [UIColor colorWithRed:1 green:0 blue:0 alpha:.4];
-            break;
-        default:
-            color = [UIColor colorWithRed:.8 green:.8 blue:.8 alpha:.5];
+    CGFloat x = layer.frame.size.width - (audioClip.sampleCount - firstSample)/samplesPerPixel;
+    
+    if (x < 0) {
+        x = 0.0;
     }
-    CGContextSetFillColorWithColor(context, color.CGColor);
     
-    CGFloat x = 0;
-    
-    Sample min, max;
-
-    for (size_t i = 0; i<numberDisplayed; i += compression) {
-        size_t p = i+firstDisplay;
-        min = max = audioClip.samples[p];
-        for (size_t j=1; j<compression && p+j < audioClip.sampleCount; j++) {
-            if (p+j >= audioClip.sampleCount) {
-                NSLog(@"***  %zu + %zu >= %zu", p, j, audioClip.sampleCount);
-                assert(p+j < audioClip.sampleCount); // XXXXXXXX 1023+1
-            }
-            Sample s = audioClip.samples[p+j];
-            if (s > max)
+    for (size_t s = firstSample; x < layer.frame.size.width; x++) {
+        assert(s >= 0 && s < audioClip.sampleCount);
+        Sample min = audioClip.samples[s++];
+        Sample max = min;
+        for (size_t i=1; i<samplesPerPixel; i++) {
+            assert(s < audioClip.sampleCount);
+            Sample sample = audioClip.samples[s++];
+            if (sample > max)
                 max = s;
-            if (s < min)
+            if (sample < min)
                 min = s;
         }
         // draw a line between min and max, with
         // zero X axis halfway up.  maximum == minimum,
         // and maximum >= v >= -minimum
-#define YF(v)    (((maximum - v)/(2*maximum))*self.frame.size.height)
+#define YF(v)    (((RAW_SAMPLE_MAX - v)/(2*RAW_SAMPLE_MAX))*self.frame.size.height)
         CGFloat y1 = YF(min);
         CGFloat y2 = YF(max);
-        CGRect r = CGRectMake(x++, y2, 1, y1 - y2 + 1);
+        CGRect r = CGRectMake(x, y2, 1, y1 - y2 + 1);
         CGContextFillRect(context, r);
     }
+    CGContextSetFillColorWithColor(context, [UIColor blueColor].CGColor);
     
     CGFloat xAxis = self.frame.origin.y + self.frame.size.height/2.0;
     
@@ -166,3 +134,39 @@
 }
 
 @end
+
+#ifdef old
+
+CGFloat x = 0;
+size_t samplesPerScreen = layer.frame.size.width * samplesPerPixel;
+size_t samplesToDisplay = audioClip.sampleCount - firstSample;
+CGFloat firstX = (samplesPerScreen - samplesToDisplay)/samplesPerPixel;
+if (samplesToDisplay >= samplesPerScreen)
+
+Sample min, max;
+
+for (size_t i = 0; i<numberDisplayed; i += compression) {
+    size_t p = i+firstDisplay;
+    min = max = audioClip.samples[p];
+    for (size_t j=1; j<compression && p+j < audioClip.sampleCount; j++) {
+        if (p+j >= audioClip.sampleCount) {
+            NSLog(@"***  %zu + %zu >= %zu", p, j, audioClip.sampleCount);
+            assert(p+j < audioClip.sampleCount); // XXXXXXXX 1023+1
+        }
+        Sample s = audioClip.samples[p+j];
+        if (s > max)
+            max = s;
+        if (s < min)
+            min = s;
+    }
+    // draw a line between min and max, with
+    // zero X axis halfway up.  maximum == minimum,
+    // and maximum >= v >= -minimum
+#define YF(v)    (((maximum - v)/(2*maximum))*self.frame.size.height)
+    CGFloat y1 = YF(min);
+    CGFloat y2 = YF(max);
+    CGRect r = CGRectMake(x++, y2, 1, y1 - y2 + 1);
+    CGContextFillRect(context, r);
+}
+#endif
+

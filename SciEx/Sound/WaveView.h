@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign)  CGFloat graphWidth;
 
 - (void) useClip:(AudioClip *)newClip;
-- (void) showRangeFrom: (size_t) startSample count:(size_t) nSamples;
+- (void) showRangeFrom: (size_t) startSample spp:(size_t) spp;
 
 @end
 

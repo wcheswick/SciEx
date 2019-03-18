@@ -375,9 +375,13 @@ size_t pixelBufSize = 0;
     if (rightBlock > blockCount)
         rightBlock = blockCount;
     
-    *startX = size.width - ((rightBlock - leftBlock)*spectrumOptions.pixelsPerBlock) - 1;
-    assert(*startX >= 0 && *startX < size.width);
-    
+    CGFloat x = size.width - ((rightBlock - leftBlock)*spectrumOptions.pixelsPerBlock) - 1;
+    if (x < 0) {
+        leftBlock += (-x)*spectrumOptions.pixelsPerBlock;
+    }
+    assert(x < size.width);
+    *startX = x;
+
     for (size_t d=leftBlock; d<rightBlock; d++)
         if (!DBblocks[d])
             DBblocks[d] = (DBBlock *) malloc(sizeof(DBBlock));
@@ -434,7 +438,7 @@ size_t pixelBufSize = 0;
     for (size_t y=0; y<size.height; y++) {
         // start of the y row.  NB: y is upside down
         size_t pyr = (size.height - y - 1) * size.width;
-        size_t pxp = pyr + *startX*sizeof(SpectrumPixel);
+        size_t pxp = pyr + x*sizeof(SpectrumPixel);
         for (size_t b=leftBlock; b<rightBlock; b++) {
             float db = DBblocks[b]->DB[y];
             p = floor(((db - minDB)/range)*SPECTRUM_MAX_PIXEL);

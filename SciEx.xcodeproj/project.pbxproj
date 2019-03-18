@@ -63,6 +63,13 @@
 		FBD7945C220B290300FC09D8 /* ishihara45.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FBD79452220B290300FC09D8 /* ishihara45.jpeg */; };
 		FBD7945D220B290300FC09D8 /* ishihara8.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = FBD79453220B290300FC09D8 /* ishihara8.jpeg */; };
 		FBD7946C220B2B3000FC09D8 /* cb.c in Sources */ = {isa = PBXBuildFile; fileRef = FBD7946B220B2B3000FC09D8 /* cb.c */; };
+		FBE97948223E58F50011DFA7 /* noEar.png in Resources */ = {isa = PBXBuildFile; fileRef = FBE97946223E58F50011DFA7 /* noEar.png */; };
+		FBE97949223E58F50011DFA7 /* ear.png in Resources */ = {isa = PBXBuildFile; fileRef = FBE97947223E58F50011DFA7 /* ear.png */; };
+		FBE9794C223E9FE10011DFA7 /* SelectSourceVC.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE9794B223E9FE10011DFA7 /* SelectSourceVC.m */; };
+		FBE97951223FBE010011DFA7 /* mike.png in Resources */ = {isa = PBXBuildFile; fileRef = FBE97950223FBE010011DFA7 /* mike.png */; };
+		FBE97955223FC2CB0011DFA7 /* sine.png in Resources */ = {isa = PBXBuildFile; fileRef = FBE97954223FC2CB0011DFA7 /* sine.png */; };
+		FBE97957223FC6770011DFA7 /* files.png in Resources */ = {isa = PBXBuildFile; fileRef = FBE97956223FC6770011DFA7 /* files.png */; };
+		FBE97959223FC7810011DFA7 /* eagle.png in Resources */ = {isa = PBXBuildFile; fileRef = FBE97958223FC7810011DFA7 /* eagle.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -161,6 +168,15 @@
 		FBD79453220B290300FC09D8 /* ishihara8.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ishihara8.jpeg; sourceTree = "<group>"; };
 		FBD7946A220B2ADD00FC09D8 /* cb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cb.h; sourceTree = "<group>"; };
 		FBD7946B220B2B3000FC09D8 /* cb.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cb.c; sourceTree = "<group>"; };
+		FBE97946223E58F50011DFA7 /* noEar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = noEar.png; sourceTree = "<group>"; };
+		FBE97947223E58F50011DFA7 /* ear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ear.png; sourceTree = "<group>"; };
+		FBE9794A223E9FE10011DFA7 /* SelectSourceVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SelectSourceVC.h; sourceTree = "<group>"; };
+		FBE9794B223E9FE10011DFA7 /* SelectSourceVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SelectSourceVC.m; sourceTree = "<group>"; };
+		FBE9794D223EA1690011DFA7 /* SoundDefines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoundDefines.h; sourceTree = "<group>"; };
+		FBE97950223FBE010011DFA7 /* mike.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mike.png; sourceTree = "<group>"; };
+		FBE97954223FC2CB0011DFA7 /* sine.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sine.png; sourceTree = "<group>"; };
+		FBE97956223FC6770011DFA7 /* files.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = files.png; sourceTree = "<group>"; };
+		FBE97958223FC7810011DFA7 /* eagle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = eagle.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,6 +196,7 @@
 			isa = PBXGroup;
 			children = (
 				FB52C9CA2203444A00E99FF1 /* SciEx */,
+				FBE97945223E58D40011DFA7 /* Icons */,
 				FB52C9C92203444A00E99FF1 /* Products */,
 				FB8F1FED221DF6EE00A4A04C /* Frameworks */,
 			);
@@ -204,6 +221,7 @@
 				FB52C9E82203476C00E99FF1 /* MainVC.m */,
 				FB52CA492203620300E99FF1 /* ExhibitVC.h */,
 				FB52CA4A2203620300E99FF1 /* ExhibitVC.m */,
+				FBE9794D223EA1690011DFA7 /* SoundDefines.h */,
 				FB52C9EB22034F7900E99FF1 /* SoundVC.h */,
 				FB52C9EC22034F7900E99FF1 /* SoundVC.m */,
 				FB52C9EE2203588600E99FF1 /* Sound */,
@@ -237,6 +255,8 @@
 		FB52C9EE2203588600E99FF1 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
+				FBE9794A223E9FE10011DFA7 /* SelectSourceVC.h */,
+				FBE9794B223E9FE10011DFA7 /* SelectSourceVC.m */,
 				FBA89A6C2211B42100CCE74B /* AudioDefines.h */,
 				FB8F1FE32219A08A00A4A04C /* AudioClip.h */,
 				FB8F1FE42219A08A00A4A04C /* AudioClip.m */,
@@ -397,6 +417,19 @@
 			path = images;
 			sourceTree = "<group>";
 		};
+		FBE97945223E58D40011DFA7 /* Icons */ = {
+			isa = PBXGroup;
+			children = (
+				FBE97950223FBE010011DFA7 /* mike.png */,
+				FBE97954223FC2CB0011DFA7 /* sine.png */,
+				FBE97956223FC6770011DFA7 /* files.png */,
+				FBE97958223FC7810011DFA7 /* eagle.png */,
+				FBE97947223E58F50011DFA7 /* ear.png */,
+				FBE97946223E58F50011DFA7 /* noEar.png */,
+			);
+			path = Icons;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -456,7 +489,9 @@
 			files = (
 				FBD79456220B290300FC09D8 /* cube.jpeg in Resources */,
 				FBD79459220B290300FC09D8 /* rainbow.gif in Resources */,
+				FBE97955223FC2CB0011DFA7 /* sine.png in Resources */,
 				FB52CA0B220358B700E99FF1 /* gull2.wav in Resources */,
+				FBE97959223FC7810011DFA7 /* eagle.png in Resources */,
 				FB52CA3B22035AEC00E99FF1 /* pick6-2.dat in Resources */,
 				FBD7945A220B290300FC09D8 /* ishihara29.jpeg in Resources */,
 				FBD7945B220B290300FC09D8 /* ishihara25.jpeg in Resources */,
@@ -472,9 +507,13 @@
 				FB52CA06220358B700E99FF1 /* bbdove.wav in Resources */,
 				FB52CA3A22035AEC00E99FF1 /* pick6.dat in Resources */,
 				FBD79454220B290300FC09D8 /* ishihara74.gif in Resources */,
+				FBE97948223E58F50011DFA7 /* noEar.png in Resources */,
 				FBD79455220B290300FC09D8 /* ishihara6.jpeg in Resources */,
 				FB52CA15220358B700E99FF1 /* sin-440.wav in Resources */,
+				FBE97957223FC6770011DFA7 /* files.png in Resources */,
+				FBE97951223FBE010011DFA7 /* mike.png in Resources */,
 				FB52CA07220358B700E99FF1 /* dandenongs1.wav in Resources */,
+				FBE97949223E58F50011DFA7 /* ear.png in Resources */,
 				FBD79457220B290300FC09D8 /* cb.png in Resources */,
 				FB52CA08220358B700E99FF1 /* bbrooster.wav in Resources */,
 				FB52CA0F220358B700E99FF1 /* munich-crowd.wav in Resources */,
@@ -497,6 +536,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FBC99806220C7C62002877C7 /* ChatVC.m in Sources */,
+				FBE9794C223E9FE10011DFA7 /* SelectSourceVC.m in Sources */,
 				FB52C9E12203444B00E99FF1 /* main.m in Sources */,
 				FBA89A662211ACF500CCE74B /* XAxisView.m in Sources */,
 				FBA89A6B2211ADAA00CCE74B /* WaveGraphView.m in Sources */,

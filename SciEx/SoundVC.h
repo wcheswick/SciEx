@@ -10,13 +10,15 @@
 #import "ExhibitVC.h"
 #import "AudioClip.h"
 #import "AudioDefines.h"
+#import "SelectSourceVC.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface SoundVC : ExhibitVC <
     UITableViewDelegate,
     UITableViewDataSource,
-    MikeProtocol>
+UIPopoverPresentationControllerDelegate,
+    MikeProtocol, SourceSelectProto>
 
 @end
 

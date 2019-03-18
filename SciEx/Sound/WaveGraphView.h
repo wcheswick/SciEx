@@ -19,8 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong)   AudioClip *audioClip;
 
-- (void) showSamplesFrom: (size_t) startSample count:(size_t) nSamples;
-
+- (void) showSamplesFrom:(size_t) startSample spp:(size_t) spp;
 @end
 
 NS_ASSUME_NONNULL_END

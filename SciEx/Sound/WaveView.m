@@ -48,10 +48,8 @@
 
 #define MS_TO_BYTES(ms) (((ms)/1000.0) * (float)audioClip.rawSampleSize * (float)audioClip.sampleRate)
 
-- (void) showRangeFrom: (size_t) startSample count:(size_t) nSamples {
-    if (startSample + nSamples > audioClip.sampleCount)
-        nSamples = audioClip.sampleCount - startSample;
-    [self.waveGraphView showSamplesFrom:startSample count:nSamples];
+- (void) showRangeFrom: (size_t) startSample spp:(size_t) spp {
+    [self.waveGraphView showSamplesFrom:startSample spp:spp];
     dispatch_async(dispatch_get_main_queue(), ^(void) {
         [self setNeedsDisplay];
     });

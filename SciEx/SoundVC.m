@@ -12,6 +12,7 @@
 //     AVAudioPlayer *audioPlayer = [[AVAudioPlayer alloc] initWithData:clipData error:&error]
 
 #import "Defines.h"
+#import "SoundDefines.h"
 #import "OrderedDictionary.h"
 #import "SoundVC.h"
 #import "AudioClip.h"
@@ -28,27 +29,37 @@
 
 #define kLastClipChosen   @"LastClipChosen"
 
-typedef enum {
-    MikeSegment = 0,
-    FileSegment = 1,
-} SegmentChoice;
+NSArray *sourceNames;
 
 @interface SoundVC ()
 
 @property (nonatomic, strong)   UIView *containerView;
+@property (nonatomic, strong)   UIView *playControlView;
 @property (nonatomic, strong)   UITableView *sampleTableView;
 @property (nonatomic, strong)   UIView *controlsView;
 @property (nonatomic, strong)   UIButton *mikeButton;
-@property (nonatomic, strong)   UIToolbar *playControlBar;
 @property (nonatomic, strong)   UISegmentedControl *selectInput;
 @property (nonatomic, strong)   SpectrumView *spectrumView;
 @property (nonatomic, strong)   SpectrumGridView *spectrumGridView;
 @property (assign)              CGSize spectrumViewSize;
+
+@property (nonatomic, strong)   UIButton *monitorButton;
+@property (nonatomic, strong)   UIBarButtonItem *runButton;
+@property (nonatomic, strong)   UISegmentedControl *srcTypeSelect;
+@property (nonatomic, strong)   UIBarButtonItem *srcButton;
+
 @property (nonatomic, strong)   WaveView *waveView;
+@property (assign)              size_t waveSamplesPerPixel;
+@property (assign)              size_t pinchWaveStartSamplesPerPixel;
 @property (nonatomic, strong)   XAxisView *xAxisView;
 
 @property (nonatomic, strong)   OrderedDictionary *soundClipSections;
 @property (assign)              BOOL AGC;
+
+@property (nonatomic, strong)   UITableView *selectSourceTable;
+@property (assign)              SourceSelected currentSource;
+
+@property (assign)              BOOL running, monitor;
 @property (nonatomic, strong)   AudioClip *audioClip;
 @property (nonatomic, strong)   NSString *currentClipFile;
 
@@ -69,17 +80,25 @@ typedef enum {
 @implementation SoundVC
 
 @synthesize containerView;
+@synthesize playControlView;
 @synthesize sampleTableView;
-@synthesize controlsView, selectInput, playControlBar;
+@synthesize controlsView, selectInput;
 @synthesize mikeButton;
 @synthesize spectrumView, spectrumGridView;
 @synthesize spectrumViewSize;
 @synthesize waveView;
+@synthesize waveSamplesPerPixel, pinchWaveStartSamplesPerPixel;
 @synthesize xAxisView;
+
+@synthesize runButton, monitorButton, srcButton;
+@synthesize srcTypeSelect;
+@synthesize selectSourceTable;
+@synthesize currentSource;
 
 @synthesize soundClipSections;
 @synthesize currentClipFile;
-@synthesize AGC;
+
+@synthesize AGC, running, monitor;
 
 @synthesize audioClip;
 
@@ -94,11 +113,16 @@ typedef enum {
         exhibitTitle = @"What does sound look like?";
         exhibitAvailable = YES;
         soundClipSections = [[OrderedDictionary alloc] init];
+        sourceNames = [NSArray arrayWithObjects:SRC_NAMES_OBJS, nil];
         AGC = NO;
+        running = NO;
+        monitor = NO;
         displayFirst = 0;
         displayCount = 0;
+        waveSamplesPerPixel = 1; // 3;
         audioClip = nil;
         currentClipFile = nil;
+        currentSource = MikeSelected;
         spectrumOptions = [[SpectrumOptions alloc] init];
         [self readSoundList];
     }
@@ -178,12 +202,14 @@ typedef enum {
 
 #define X_AXIS_H    20
 
+#define PLAY_CTL_W  50
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     self.navigationController.navigationBarHidden = NO;
-    self.navigationController.toolbarHidden = YES;
+    self.navigationController.toolbarHidden = NO;
     
     UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc]
                                       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
@@ -192,6 +218,11 @@ typedef enum {
     
     containerView = [[UIView alloc] init];
     containerView.backgroundColor = [UIColor whiteColor];
+    
+    playControlView = [[UIView alloc]
+                       initWithFrame:CGRectMake(LATER, 0, PLAY_CTL_W, LATER)];
+    
+    [containerView addSubview:playControlView];
     
     spectrumView = [[SpectrumView alloc]
                     initWithFrame:CGRectMake(0, 0, LATER, FFT_H)];
@@ -244,42 +275,74 @@ typedef enum {
     xAxisView.layer.borderColor = [UIColor yellowColor].CGColor;
     [containerView addSubview:xAxisView];
     
+    UIImage *hearImage = [UIImage
+                          imageWithContentsOfFile:[[NSBundle mainBundle]
+                                                   pathForResource:@"ear" ofType:@"png"]];
+    UIImage *noHearImage = [UIImage
+                            imageWithContentsOfFile:[[NSBundle mainBundle]
+                                                     pathForResource:@"noEar" ofType:@"png"]];
+    CGFloat h = self.navigationController.toolbar.frame.size.height;
+    
+    monitorButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    CGFloat aspect = hearImage.size.width / hearImage.size.height;
+    monitorButton.frame = CGRectMake(0, 0, h*aspect, h);
+    monitorButton.autoresizingMask = UIViewAutoresizingNone;
+//    monitorButton.contentMode = UIViewContentModeCenter;
+    [monitorButton setImage:hearImage forState:UIControlStateNormal];
+    [monitorButton setImage:noHearImage forState:UIControlStateSelected];
+    
+    [monitorButton addTarget:self action:@selector(doToggleHear:)
+            forControlEvents:UIControlEventTouchUpInside];
+    [monitorButton addTarget:self action:@selector(doToggleHear:)
+            forControlEvents:UIControlEventTouchUpInside];
+    monitorButton.backgroundColor = [UIColor greenColor];
+
+    static struct iconList {
+        char *file;
+        SourceSelected source;
+    } iconList[] = {
+        {"mike", MikeSelected},
+        {"sine", GeneratorSelected},
+        {"files", UserFileSelected},
+        {"eagle", SampleFileSelected},
+        {0, 0}
+    };
+    
+    srcTypeSelect = [[UISegmentedControl alloc] init];
+    for (size_t i=0; iconList[i].file; i++) {
+        NSString *file = [NSString stringWithUTF8String:iconList[i].file];
+        UIImage *image = [UIImage
+                              imageWithContentsOfFile:[[NSBundle mainBundle]
+                                                       pathForResource:file ofType:@"png"]];
+        [srcTypeSelect insertSegmentWithImage:
+         [image imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
+                                      atIndex:i animated:NO];
+        [srcTypeSelect setWidth:60 forSegmentAtIndex:i];
+    }
+    [srcTypeSelect addTarget:self
+                     action:@selector(newSourceType:)
+           forControlEvents:UIControlEventValueChanged];
+    srcTypeSelect.selectedSegmentIndex = MikeSelected;
+    srcTypeSelect.tintColor = [UIColor whiteColor];
+    
+    srcButton = [[UIBarButtonItem alloc]
+                 initWithBarButtonSystemItem:UIBarButtonSystemItemAction
+                 target:self
+                 action:@selector(goSelectSource:)];
+
+    
+    [self selectSource: MikeSelected];
+    
+    selectSourceTable = [[UITableView alloc] init];
+    
+    
     controlsView = [[UIView alloc]
                     initWithFrame:CGRectMake(0, BELOW(xAxisView.frame),
                                              LATER, CONTROLS_H)];
     controlsView.layer.borderWidth = 1;
     controlsView.layer.borderColor = [UIColor greenColor].CGColor;
     
-    playControlBar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0,
-                                                                 LATER, PLAY_CONTROL_H)];
-    playControlBar.opaque = YES;
-    playControlBar.backgroundColor = [UIColor whiteColor];
-    [controlsView addSubview:playControlBar];
-    
     [self adjustPlayControlBar];
-    
-    UISegmentedControl *selectInput = [[UISegmentedControl alloc]
-                                       initWithItems:@[@"Mike", @"Samples"]];
-    selectInput.frame = CGRectMake(0, BELOW(playControlBar.frame) + SEP,
-                                   INPUT_SELECTOR_W, INPUT_SELECTOR_H);
-    [selectInput addTarget:self
-                    action:@selector(changeInput:)
-          forControlEvents:UIControlEventValueChanged];
-    selectInput.selectedSegmentIndex = MikeSegment;
-    [controlsView addSubview:selectInput];
-
-    mikeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    mikeButton.enabled = [AudioClip mikeAvailable];
-    mikeButton.frame = CGRectMake(RIGHT(selectInput.frame) + 3*SEP, selectInput.frame.origin.y,
-                                  MIKE_BUTTON_W, selectInput.frame.size.height);
-    [mikeButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [mikeButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-    [mikeButton setTitle:@"Mike On" forState:UIControlStateNormal];
-    [mikeButton setTitle:@"Mike Off" forState:UIControlStateSelected];
-    mikeButton.titleLabel.font = [UIFont boldSystemFontOfSize: BUTTON_FONT_SIZE];
-    [mikeButton addTarget:self action:@selector(doMike:)
-         forControlEvents:UIControlEventTouchUpInside];
-    [controlsView addSubview:mikeButton];
     
     SET_VIEW_HEIGHT(controlsView, BELOW(selectInput.frame));
     [containerView addSubview:controlsView];
@@ -299,24 +362,48 @@ typedef enum {
     
     audioClip = [[AudioClip alloc] init];
     selectInput.enabled = NO;
-    if (mikeButton.enabled) {   // try to setup mike
-        NSString *err = [audioClip initializeMikeForTarget:self];
-        if (!err) {
-            selectInput.selectedSegmentIndex = MikeSegment;
-            selectInput.enabled = YES;
+    switch (currentSource) {
+        case MikeSelected:
             [waveView useClip:audioClip];
             xAxisView.audioClip = audioClip;
-        } else
-            NSLog(@"mike initialization error %@", err);
+            break;
+        case SampleFileSelected:
+            NSLog(@"SampleFileSelected");
+            break;
+        case UserFileSelected:
+            NSLog(@"UserFileSelected");
+            break;
+        case GeneratorSelected:
+            NSLog(@"GeneratorSelected");
+            break;
     }
-    if (!selectInput.enabled) {
-        selectInput.selectedSegmentIndex = FileSegment;
-        selectInput.enabled = YES;
-        currentClipFile = [[NSUserDefaults standardUserDefaults] stringForKey:kLastClipChosen];
-        if (currentClipFile) {
-            [self selectClip:currentClipFile];
-        }
-    }
+}
+
+- (IBAction)goSelectSource:(UIBarButtonItem *)sender {
+    SelectSourceVC *ssVC = [[SelectSourceVC alloc] init];
+    ssVC.view.frame = CGRectMake(0, 0, 100, 44*4 + 40);
+    ssVC.caller = self;
+    ssVC.selectedSource = currentSource;
+    UINavigationController *nav = [[UINavigationController alloc]
+                                   initWithRootViewController:ssVC];
+    nav.modalPresentationStyle = UIModalPresentationPopover;
+    nav.preferredContentSize = CGSizeMake(100, 44*4 + 40);
+    CGRect f = nav.view.frame;
+    f.size = nav.preferredContentSize;
+    nav.view.frame = f;
+    
+    UIPopoverPresentationController *popvc = nav.popoverPresentationController;
+    popvc.sourceRect = CGRectMake(100, 100, 100, 100);
+    popvc.delegate = self;
+    popvc.sourceView = ssVC.view;
+    popvc.barButtonItem = sender;
+    [self presentViewController:nav animated:YES completion:nil];
+
+}
+
+- (void) selectSource: (SourceSelected) src {
+    currentSource = src;
+    srcButton.title = [sourceNames objectAtIndex:currentSource];
 }
 
 - (void) selectClip:(NSString *)clipFile {
@@ -333,6 +420,8 @@ typedef enum {
 - (void) adjustPlayControlBar {
     UIBarButtonItem *flexiableItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
     
+    [self runAudio:running];
+
     UIButton *AGCButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     AGCButton.enabled = NO;
     mikeButton.frame = CGRectMake(RIGHT(selectInput.frame) + 3*SEP, selectInput.frame.origin.y,
@@ -348,36 +437,58 @@ typedef enum {
     UIBarButtonItem *AGCBarButton = [[UIBarButtonItem alloc]
                                   initWithCustomView:AGCButton];
 
-#ifdef notdef
-    UIBarButtonItem *rewindButton = [[UIBarButtonItem alloc]
-                                    initWithBarButtonSystemItem:UIBarButtonSystemItemRewind
-                                    target:self action:@selector(doRewind:)];
-    rewindButton.enabled = NO;
-    UIBarButtonItem *redoButton = [[UIBarButtonItem alloc]
-                                   initWithBarButtonSystemItem:UIBarButtonSystemItemRedo
-                                   target:self action:@selector(doRedo:)];
-    redoButton.enabled = NO;
+    UIBarButtonItem *monitorBarButton = [[UIBarButtonItem alloc]
+                                         initWithCustomView:monitorButton];
+    monitorBarButton.image = monitorButton.imageView.image;
     
-    UIBarButtonItem *startStopButton;
-    if (mikeIsOn)
-        startStopButton = [[UIBarButtonItem alloc]
-                           initWithBarButtonSystemItem:UIBarButtonSystemItemPause
-                           target:self
-                           action:@selector(doStop:)];
-    else
-        startStopButton = [[UIBarButtonItem alloc]
-                           initWithBarButtonSystemItem:UIBarButtonSystemItemPlay
-                           target:self
-                           action:@selector(doStart:)];
-#endif
+    UIBarButtonItem *negativeSeparator = [[UIBarButtonItem alloc]
+                                          initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+    negativeSeparator.width = -12;
+    
+    UIBarButtonItem *srcSelectBarButton = [[UIBarButtonItem alloc] initWithCustomView:srcTypeSelect];
 
-    playControlBar.items = [NSArray arrayWithObjects:
-                               flexiableItem,
-                            AGCBarButton, flexiableItem,
- //                              rewindButton, flexiableItem,
- //                              startStopButton, flexiableItem,
-                               nil];
-    [playControlBar setNeedsDisplay];
+    NSArray *toolbarItems = [NSArray arrayWithObjects:
+                             flexiableItem,
+                             runButton, flexiableItem,
+                             AGCBarButton, flexiableItem,
+                             monitorBarButton, flexiableItem,
+                             srcSelectBarButton,
+                             nil];
+    [self setToolbarItems: toolbarItems];
+}
+
+
+- (IBAction)doToggleRun:(UIButton *)b {
+    [self runAudio:!running];
+}
+
+- (void) runAudio:(BOOL) run {
+    running = run;
+    if (running) {
+        switch (currentSource) {
+            case MikeSelected:
+                [audioClip startMike];
+                break;
+            default:
+                ;
+        }
+        runButton = [[UIBarButtonItem alloc]
+                     initWithBarButtonSystemItem:UIBarButtonSystemItemPause
+                     target:self
+                     action:@selector(doToggleRun:)];
+    } else {
+        switch (currentSource) {
+            case MikeSelected:
+                [audioClip stopMike];
+                break;
+            default:
+                ;
+        }
+        runButton = [[UIBarButtonItem alloc]
+                     initWithBarButtonSystemItem:UIBarButtonSystemItemPlay
+                     target:self
+                     action:@selector(doToggleRun:)];
+    }
 }
 
 - (void) viewWillTransitionToSize:(CGSize)size
@@ -410,11 +521,10 @@ typedef enum {
     self.navigationController.navigationBar.opaque = YES;
     
     SET_VIEW_WIDTH(spectrumView, containerView.frame.size.width);
-    spectrumViewSize = spectrumView.frame.size;   // a non-main thread size
+    spectrumViewSize = spectrumView.frame.size;   // size not needing the mail thread
     spectrumGridView.frame = spectrumView.frame;
     SET_VIEW_WIDTH(waveView, containerView.frame.size.width);
     SET_VIEW_WIDTH(xAxisView, containerView.frame.size.width);
-    SET_VIEW_WIDTH(playControlBar, containerView.frame.size.width);
     SET_VIEW_WIDTH(controlsView, containerView.frame.size.width);
     SET_VIEW_WIDTH(sampleTableView, containerView.frame.size.width);
     [sampleTableView reloadData];
@@ -423,12 +533,12 @@ typedef enum {
     displayCount = 5*audioClip.sampleRate;
 
     [waveView setNeedsLayout];
-    [self changeInput:selectInput];
+//    [self newSource:selectInput];
 }
 
-- (IBAction)changeInput:(UISegmentedControl *)sender {
+- (IBAction)newSourceType:(UISegmentedControl *)sender {
     NSLog(@"selected input %ld", (long)sender.selectedSegmentIndex);
-    if (sender.selectedSegmentIndex == MikeSegment) {
+    if (sender.selectedSegmentIndex == MikeSelected) {
         audioClip = [[AudioClip alloc] init];
         NSString *err = [audioClip initializeMikeForTarget:self];
         if (err) {
@@ -456,19 +566,16 @@ typedef enum {
     }
 }
 
+- (IBAction)doToggleHear:(UIButton *)b {
+    monitorButton.selected = !monitorButton.selected;
+    [monitorButton setNeedsDisplay];
+}
 
 - (IBAction)doAGC:(UIButton *)b {
     AGC = b.selected = !b.selected;
     NSLog(@"AGC is now %@", AGC ? @"ON" : @"OFF");
 }
 
-- (IBAction)doMike:(UIButton *)sender {
-    mikeButton.selected = !mikeButton.selected;
-    if (mikeButton.selected) {
-        [audioClip startMike];
-    } else
-        [audioClip stopMike];
-}
 
 #pragma mark - Table view data source
 
@@ -515,11 +622,19 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 //    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
 }
 
-- (void) displayRangeFrom:(size_t)first length:(size_t)count {
-    [waveView showRangeFrom:first count:count];
-    dispatch_async(dispatch_get_main_queue(), ^(void) {
-        [self->xAxisView range:self->displayFirst to:self->displayFirst + count];
-    });
+
+- (void) audioArrivedFromMike {
+    displayFirst = audioClip.sampleCount - waveView.graphWidth*waveSamplesPerPixel;
+    if (displayFirst < 0)
+        displayFirst = 0;
+    [self displayWaveFrom:displayFirst];
+}
+
+- (void) displayWaveFrom:(size_t)first {
+    [waveView showRangeFrom:first spp:waveSamplesPerPixel];
+//    dispatch_async(dispatch_get_main_queue(), ^(void) {
+//        [self->xAxisView range:self->displayFirst at:self->waveSamplesPerPixel];
+//    });
 }
 
 - (IBAction)doPanAudio:(UIPanGestureRecognizer *)sender {
@@ -540,7 +655,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
                 displayFirst = 0;
             if (displayFirst + displayCount > audioClip.sampleCount)
                 displayFirst = audioClip.sampleCount - displayCount;
-            [self displayRangeFrom:displayFirst length:displayCount];
+            [self displayWaveFrom:displayFirst];
             break;
         }
         default:
@@ -561,33 +676,26 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     //    CGFloat center = (touchRight.x + touchLeft.x)/2.0;
     switch (sender.state) {
         case UIGestureRecognizerStateBegan:
+            if (touchRight.x == touchLeft.x)
+                touchRight.x = touchLeft.x + 1; // no div by zero
             startTouch0 = touchLeft;
             startTouch1 = touchRight;
+            pinchWaveStartSamplesPerPixel = waveSamplesPerPixel;
             startStart = displayFirst;
             startCount = displayCount;
             break;
         case UIGestureRecognizerStateChanged:
         case UIGestureRecognizerStateEnded: {
             CGFloat sep = touchRight.x - touchLeft.x;
-            float zoom = sep/(startTouch1.x - startTouch0.x);
-            //            NSLog(@"handleProcessedPinchGesture: @ %.0f zoom %.2f", center, zoom);
-            displayCount = startCount/zoom;
-            if (displayCount > audioClip.sampleCount)
-                displayCount = audioClip.sampleCount;
-            if (displayFirst + displayCount > audioClip.sampleCount)
-                displayFirst = audioClip.sampleCount - displayCount;
-            if (displayFirst < 0)
-                displayFirst = 0;
-            [self displayRangeFrom:displayFirst length:displayCount];
+            if (sep == 0)
+                sep = 1;
+            waveSamplesPerPixel = pinchWaveStartSamplesPerPixel/(startTouch1.x - startTouch0.x);
+            [self displayWaveFrom:displayFirst];
             break;
         }
         default:
             ;
     }
-}
-
-- (void) audioArrivedFromMike {
-    [self displayRangeFrom:displayFirst length:displayCount];
 }
 
 - (void) spectrumChanged {
@@ -648,7 +756,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 }
 
 - (IBAction)doTapSpectrum:(UITapGestureRecognizer *)sender {
-    [self doMike:nil];
+    [self runAudio:!running];
 }
 
 - (IBAction)doPanSpectrum:(UIPanGestureRecognizer *)sender {
@@ -669,7 +777,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
                 displayFirst = 0;
             if (displayFirst + displayCount > audioClip.sampleCount)
                 displayFirst = audioClip.sampleCount - displayCount;
-            [self displayRangeFrom:displayFirst length:displayCount];
+            [self displayWaveFrom:displayFirst];
             break;
         }
         default:
