@@ -324,6 +324,7 @@ NSArray *sourceNames;
            forControlEvents:UIControlEventValueChanged];
     srcTypeSelect.selectedSegmentIndex = MikeSelected;
     srcTypeSelect.tintColor = [UIColor whiteColor];
+    srcTypeSelect.backgroundColor = [UIColor yellowColor];
     
     srcButton = [[UIBarButtonItem alloc]
                  initWithBarButtonSystemItem:UIBarButtonSystemItemAction
@@ -361,12 +362,15 @@ NSArray *sourceNames;
     self.view.backgroundColor = [UIColor whiteColor];
     
     audioClip = [[AudioClip alloc] init];
+
     selectInput.enabled = NO;
     switch (currentSource) {
-        case MikeSelected:
+        case MikeSelected: {
+            NSString *err = [audioClip initializeMikeForTarget:self];
             [waveView useClip:audioClip];
             xAxisView.audioClip = audioClip;
             break;
+        }
         case SampleFileSelected:
             NSLog(@"SampleFileSelected");
             break;
