@@ -224,7 +224,7 @@
 				FBE9794D223EA1690011DFA7 /* SoundDefines.h */,
 				FB52C9EB22034F7900E99FF1 /* SoundVC.h */,
 				FB52C9EC22034F7900E99FF1 /* SoundVC.m */,
-				FB52C9EE2203588600E99FF1 /* Sound */,
+				FB52C9EE2203588600E99FF1 /* Mike stuff */,
 				FB52CA4C2203A7DE00E99FF1 /* VideoExhibitVC.h */,
 				FB52CA4D2203A7DE00E99FF1 /* VideoExhibitVC.m */,
 				FB52CA4122035F6D00E99FF1 /* ColorBlindVC.h */,
@@ -252,7 +252,7 @@
 			path = SciEx;
 			sourceTree = "<group>";
 		};
-		FB52C9EE2203588600E99FF1 /* Sound */ = {
+		FB52C9EE2203588600E99FF1 /* Mike stuff */ = {
 			isa = PBXGroup;
 			children = (
 				FBE9794A223E9FE10011DFA7 /* SelectSourceVC.h */,
@@ -275,7 +275,7 @@
 				FBA89A682211AD6200CCE74B /* Samples */,
 				FB52CA17220358CE00E99FF1 /* src */,
 			);
-			path = Sound;
+			path = "Mike stuff";
 			sourceTree = "<group>";
 		};
 		FB52CA17220358CE00E99FF1 /* src */ = {
